@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
+//윤동우 수정 시작
 typedef struct movie {
 	int serial_number;
 	char *title;
