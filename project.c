@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 
-typedef struct movie {
+typedef struct movie {//asdf 
 	int serial_number;
 	char *title;
 	char *genre;
