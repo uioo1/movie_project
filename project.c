@@ -33,132 +33,208 @@ typedef struct actor {
 	struct actor *next;
 }actor;
 
-movie *root_movie;
-director *root_director;
-actor *root_actor;
-int root_m = 0, root_d = 0, root_a = 0;
+movie *root_movie, *m;	//movie*의 헤더와 다른거
+director *root_director, *d;	//director*의 헤더와 다른거
+actor *root_actor, *a;	//actor*의 헤더와 다른거
+int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//헤더인지 아닌지 판별할 변수
 
-void add_movie(movie *m){
-	movie *temp_mp;
-	char *temp;
-	m = (movie *)malloc(sizeof(movie));	
-	temp = (char *)malloc(sizeof(char) * 200);
+void add_movie(){	//movie 정보 입력받는 함수
+	char *temp;	//글자를 입력받을 임시 포인터
+	temp = (char *)malloc(sizeof(char) * 200);	//임시 포인터 동적할당
+
+	if (root_m_num == 0) {	//링크드 리스트 처음 헤더를 root_movie에 저장
+		root_movie = m;
+		root_m_num = 1;
+	}	
 	printf("title > ");
-	scanf("%s", temp);
-	m->title = (char *)malloc(sizeof(char) * strlen(temp));
-	strcpy(m->title, temp);
-	printf("%s\n", m->title);
+	scanf("%s", temp);	//title 입력
+	m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+	strcpy(m->title, temp);	//temp를 구조체 멤버에 옮김
 
 	printf("genre > ");
 	scanf("%s", temp);
-	m->genre = (char *)malloc(sizeof(char) * strlen(temp));
+	m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->genre, temp);
 	
 	printf("director > ");
 	scanf("%s", temp);
-	m->director = (char *)malloc(sizeof(char) * strlen(temp));
+	m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->director, temp);
 
 	printf("year > ");
 	scanf("%s", temp);
-	m->year = (char *)malloc(sizeof(char) * strlen(temp));
+	m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->year, temp);
 
 	printf("time > ");
 	scanf("%s", temp);
-	m->time = (char *)malloc(sizeof(char) * strlen(temp));
+	m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->time, temp);
 	
 	printf("actors > ");
 	scanf("%s", temp);
-	m->actors = (char *)malloc(sizeof(char) * strlen(temp));
+	getchar();
+	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
-
-	if (root_m == 0) {
-		printf("넣음\n");
-		root_movie = m;
-		root_m = 1;
-	}
-	m->next = (movie *)malloc(sizeof(movie));
-	m = m->next;
+	
+	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
+	m = m->next;	//m을 현재 m의 next로 바꿈
+	m->next = NULL;	//지금의 m의 next를 null로 해줌
 }
 
-void add_director(director *d) {
-	director *temp_dp;
+void add_director() {	//director 정보 입력받는 함수
 	char *temp;
-	d = (director *)malloc(sizeof(director));
 	temp = (char *)malloc(sizeof(char) * 200);
+
+	if (root_d_num == 0) {	//링크드 리스트 처음 헤더를 root_director에 저장
+		root_director = d;
+		root_d_num = 1;
+	}
+
 	printf("name > ");
-	scanf("%s", temp);
-	d->name = (char *)malloc(sizeof(char) * strlen(temp));
-	strcpy(d->name, temp);
+	scanf("%s", temp);	//name 입력
+	d->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+	strcpy(d->name, temp);	//temp를 구조체 멤버에 옮김
 
 	printf("sex > ");
 	scanf("%s", temp);
-	d->sex = (char *)malloc(sizeof(char) * strlen(temp));
+	d->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(d->sex, temp);
 
 	printf("birth > ");
 	scanf("%s", temp);
-	d->birth = (char *)malloc(sizeof(char) * strlen(temp));
+	d->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(d->birth, temp);
 
 	printf("best_movies > ");
 	scanf("%s", temp);
-	d->best_movies = (char *)malloc(sizeof(char) * strlen(temp));
+	d->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(d->best_movies, temp);
+
+	d->next = (director *)malloc(sizeof(director));	//d의 next포인터를 동적할당
+	d = d->next;	//d를 현재 d의 next로 바꿈
+	d->next = NULL;	//지금의 d의 next를 null로 해줌
 }
 
-void add_actor(actor *a) {
-	actor *temp_ap;
+void add_actor() {	//actor의 정보를 입력받는 함수
 	char *temp;
-	a = (actor *)malloc(sizeof(actor));
 	temp = (char *)malloc(sizeof(char) * 200);
+
+	if (root_a_num == 0) {	//링크드 리스트 처음 헤더를 root_actor에 저장
+		root_actor = a;
+		root_a_num = 1;
+	}
+
 	printf("name > ");
 	scanf("%s", temp);
-	a->name = (char *)malloc(sizeof(char) * strlen(temp));
+	a->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(a->name, temp);
-	strcat(a->name, "\0");
 
 	printf("sex > ");
 	scanf("%s", temp);
-	a->sex = (char *)malloc(sizeof(char) * strlen(temp));
+	a->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(a->sex, temp);
-	strcat(a->sex, "\0");
 
 	printf("birth > ");
 	scanf("%s", temp);
-	a->birth = (char *)malloc(sizeof(char) * strlen(temp));
+	a->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(a->birth, temp);
-	strcat(a->birth, "\0");
 
 	printf("best_movies > ");
 	scanf("%s", temp);
-	a->best_movies = (char *)malloc(sizeof(char) * strlen(temp));
+	a->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(a->best_movies, temp);
+
+	a->next = (actor *)malloc(sizeof(actor));	//a의 next포인터를 동적할당
+	a = a->next;	//a을 현재 a의 next로 바꿈
+	a->next = NULL;	//지금의 a의 next를 null로 해줌
 }
 
+void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
+	if (!strcmp(input, "add m"))
+		add_movie();
+	else if (!strcmp(input, "add d"))
+		add_director();
+	else if (!strcmp(input, "add a"))
+		add_actor();
+	else if (!strcmp(input, "add md")) {
+		add_movie();
+		add_director();
+	}
+	else if (!strcmp(input, "add dm")) {
+		add_director();
+		add_movie();
+	}
+	else if (!strcmp(input, "add ma")) {
+		add_movie();
+		add_actor();
+	}
+	else if (!strcmp(input, "add am")) {
+		add_actor();
+		add_movie();
+	}
+	else if (!strcmp(input, "add da")) {
+		add_director();
+		add_actor();
+	}
+	else if (!strcmp(input, "add ad")) {
+		add_actor();
+		add_director();
+	}
+	else if (!strcmp(input, "add mda")) {
+		add_movie();
+		add_director();
+		add_actor();
+	}
+	else if (!strcmp(input, "add mad")) {
+		add_movie();
+		add_actor();
+		add_director();
+	}
+	else if (!strcmp(input, "add amd")) {
+		add_actor();
+		add_movie();
+		add_director();
+	}
+	else if (!strcmp(input, "add adm")) {
+		add_actor();
+		add_director();
+		add_movie();
+	}
+	else if (!strcmp(input, "add dma")) {
+		add_director();
+		add_movie();
+		add_actor();
+	}
+	else if (!strcmp(input, "add dam")) {
+		add_director();
+		add_actor();
+		add_movie();
+	}
+	else if (!strcmp(input, "print")) {
+		m = root_movie;
+		while(m->next != NULL) {
+			printf("%s\n", m->director);
+			m = m->next;
+		}
+	}
+}
 
 int main(void) {
-	movie *m;
-	actor *a;
-	director *d;
+	m = (movie *)malloc(sizeof(movie));	//movie *m 전역 구조체 동적할당
+	d = (director *)malloc(sizeof(director));	//director *d 전역 구조체 동적할당
+	a = (actor *)malloc(sizeof(actor));	//actor *a 전역 구조체 동적할당
 
 	char *input_words;
 	input_words = (char *)malloc(sizeof(char) * 20);
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
 	printf("You can use add, update, delete, search, sort, save, end commands.\n");
+
 	while (1) {
 		printf("(movie) ");
 		gets(input_words);
-		printf("input words : %s\n", input_words);
-		if (!strcmp(input_words, "add m"))
-			add_movie(m);
-		else if (!strcmp(input_words, "add d"))
-			add_director(d);
-		else if (!strcmp(input_words, "add a"))
-			add_actor(a);
+		menu_func(input_words);
 	}
 	return 0;
 }
