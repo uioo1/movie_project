@@ -9,7 +9,7 @@ typedef struct movie {
 	char *title;
 	char *genre;
 	char *director;
-	char *year;
+	int year;
 	char *time;
 	char *actors;
 	struct movie *next;
@@ -37,6 +37,7 @@ movie *root_movie, *m;	//movie*의 헤더와 다른거
 director *root_director, *d;	//director*의 헤더와 다른거
 actor *root_actor, *a;	//actor*의 헤더와 다른거
 int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//헤더인지 아닌지 판별할 변수
+int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//각각의 시리얼 넘버 전역변수
 
 void add_movie(){	//movie 정보 입력받는 함수
 	char *temp;	//글자를 입력받을 임시 포인터
@@ -46,6 +47,8 @@ void add_movie(){	//movie 정보 입력받는 함수
 		root_movie = m;
 		root_m_num = 1;
 	}	
+	m->serial_number = serial_m_num++;
+
 	printf("title > ");
 	scanf("%s", temp);	//title 입력
 	m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
@@ -62,9 +65,9 @@ void add_movie(){	//movie 정보 입력받는 함수
 	strcpy(m->director, temp);
 
 	printf("year > ");
-	scanf("%s", temp);
-	m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
-	strcpy(m->year, temp);
+	scanf("%d", &(m->year));
+	//m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+	//strcpy(m->year, temp);
 
 	printf("time > ");
 	scanf("%s", temp);
@@ -80,6 +83,8 @@ void add_movie(){	//movie 정보 입력받는 함수
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
 	m = m->next;	//m을 현재 m의 next로 바꿈
 	m->next = NULL;	//지금의 m의 next를 null로 해줌
+
+	printf("@@ Done\n\n");
 }
 
 void add_director() {	//director 정보 입력받는 함수
@@ -90,6 +95,7 @@ void add_director() {	//director 정보 입력받는 함수
 		root_director = d;
 		root_d_num = 1;
 	}
+	d->serial_number = serial_d_num++;
 
 	printf("name > ");
 	scanf("%s", temp);	//name 입력
@@ -108,12 +114,15 @@ void add_director() {	//director 정보 입력받는 함수
 
 	printf("best_movies > ");
 	scanf("%s", temp);
+	getchar();
 	d->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(d->best_movies, temp);
 
 	d->next = (director *)malloc(sizeof(director));	//d의 next포인터를 동적할당
 	d = d->next;	//d를 현재 d의 next로 바꿈
 	d->next = NULL;	//지금의 d의 next를 null로 해줌
+
+	printf("@@ Done\n\n");
 }
 
 void add_actor() {	//actor의 정보를 입력받는 함수
@@ -124,6 +133,7 @@ void add_actor() {	//actor의 정보를 입력받는 함수
 		root_actor = a;
 		root_a_num = 1;
 	}
+	a->serial_number = serial_a_num++;
 
 	printf("name > ");
 	scanf("%s", temp);
@@ -142,12 +152,51 @@ void add_actor() {	//actor의 정보를 입력받는 함수
 
 	printf("best_movies > ");
 	scanf("%s", temp);
+	getchar();
 	a->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(a->best_movies, temp);
 
 	a->next = (actor *)malloc(sizeof(actor));	//a의 next포인터를 동적할당
 	a = a->next;	//a을 현재 a의 next로 바꿈
 	a->next = NULL;	//지금의 a의 next를 null로 해줌
+
+	printf("@@ Done\n\n");
+}
+
+void save_director() {
+	FILE *fp;
+	fp = fopen("director_list", "w");
+	d = root_director;
+	while (d->next != NULL) {		
+		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
+		d = d->next;
+	}
+	fclose(fp);
+	printf("@@ Done\n\n");
+}
+
+void save_movie() {
+	FILE *fp;
+	fp = fopen("movie_list", "w");
+	m = root_movie;
+	while (m->next != NULL) {
+		fprintf(fp, "%d:%s:%s:%s:%s:%s\n", m->serial_number, m->title, m->genre, m->director, m->year, m->time);
+		m = m->next;
+	}
+	fclose(fp);
+	printf("@@ Done\n\n");
+}
+
+void save_actor() {
+	FILE *fp;
+	fp = fopen("actor_list", "w");
+	a = root_actor;
+	while (a->next != NULL) {
+		fprintf(fp, "%d:%s:%s:%s:%s\n", a->serial_number, a->name, a->sex, a->birth, a->best_movies);
+		a = a->next;
+	}
+	fclose(fp);
+	printf("@@ Done\n\n");
 }
 
 void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
@@ -217,6 +266,15 @@ void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후�
 			printf("%s\n", m->director);
 			m = m->next;
 		}
+	}
+	else if (!strcmp(input, "save m")) {
+		save_movie();
+	}
+	else if (!strcmp(input, "save d")) {
+		save_director();
+	}
+	else if (!strcmp(input, "save a")) {
+		save_actor();
 	}
 }
 
