@@ -298,6 +298,120 @@ scanf("%d", &number);
 		printf("@@ Done\n\n");
 }
 
+void delete_director(){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	int number;
+	d = root_director;
+
+printf("serial number : ");
+scanf("%d", &number);
+getchar();
+	while(1){
+		if(d->serial_number == number){//m->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			temp = "";
+			d->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(d->name, temp);	//temp를 구조체 멤버에 옮김
+
+			d->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(d->sex, temp);
+
+			d->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(d->birth, temp);
+
+			d->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(d->best_movies, temp);
+			break;
+		}
+		else if(d->next == NULL){
+			printf("No such record\n");
+			break;
+		}
+		else{
+			d = d->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+		printf("@@ Done\n\n");
+}
+
+void delete_movie(){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	int number;
+	m = root_movie;
+
+printf("serial number : ");
+scanf("%d", &number);
+getchar();
+	while(1){
+		if(m->serial_number == number){//m->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			temp = "";
+			m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(m->title, temp);	//temp를 구조체 멤버에 옮김
+
+			m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->genre, temp);
+
+			m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->director, temp);
+
+			m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->year, temp);
+
+			m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->time, temp);
+
+			m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->actors, temp);
+			break;
+		}
+		else if(m->next == NULL){
+			printf("No such record\n");
+			break;
+		}
+		else{
+			m = m->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+		printf("@@ Done\n\n");
+}
+
+void delete_actor(){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	int number;
+	a = root_actor;
+
+printf("serial number : ");
+scanf("%d", &number);
+getchar();
+	while(1){
+		if(a->serial_number == number){//m->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			temp = "";
+			a->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(a->name, temp);	//temp를 구조체 멤버에 옮김
+
+			a->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->sex, temp);
+
+			a->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->birth, temp);
+
+			a->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->best_movies, temp);
+			break;
+		}
+		else if(a->next == NULL){
+			printf("No such record\n");
+			break;
+		}
+		else{
+			a = a->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+		printf("@@ Done\n\n");
+}
+
 void save_director() {
 	FILE *fp;
 	fp = fopen("director_list", "w");
@@ -440,15 +554,26 @@ void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후�
 			a = a->next;
 		}
 	}
+
 	else if (!strcmp(input, "update m")) {//실험을 위한 임시용 변수1
-		update_movie();
-}
-else if (!strcmp(input, "update d")) {//실험을 위한 임시용 변수1
-		update_director();
-}
-else if (!strcmp(input, "update a")) {//실험을 위한 임시용 변수1
-		update_actor();
-}
+			update_movie();
+	}
+	else if (!strcmp(input, "update d")) {//실험을 위한 임시용 변수1
+			update_director();
+	}
+	else if (!strcmp(input, "update a")) {//실험을 위한 임시용 변수1
+			update_actor();
+	}
+
+	else if (!strcmp(input, "delete m")) {//실험을 위한 임시용 변수1
+		delete_movie();
+	}
+	else if (!strcmp(input, "delete d")) {//실험을 위한 임시용 변수1
+		delete_director();
+	}
+	else if (!strcmp(input, "delete a")) {//실험을 위한 임시용 변수1
+		delete_actor();
+	}
 
 	else if (!strcmp(input, "save m")) {
 		save_movie();
