@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <time.h>
 
-typedef struct movie {//asdf 
+typedef struct movie {
 	int serial_number;
 	char *title;
 	char *genre;
