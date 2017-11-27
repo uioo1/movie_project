@@ -46,7 +46,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	if (root_m_num == 0) {	//링크드 리스트 처음 헤더를 root_movie에 저장
 		root_movie = m;
 		root_m_num = 1;
-	}	
+	}
 	m->serial_number = serial_m_num++;
 
 	printf("title > ");
@@ -58,7 +58,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	scanf("%s", temp);
 	m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->genre, temp);
-	
+
 	printf("director > ");
 	scanf("%s", temp);
 	m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
@@ -73,13 +73,13 @@ void add_movie(){	//movie 정보 입력받는 함수
 	scanf("%s", temp);
 	m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->time, temp);
-	
+
 	printf("actors > ");
 	scanf("%s", temp);
 	getchar();
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
-	
+
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
 	m = m->next;	//m을 현재 m의 next로 바꿈
 	m->next = NULL;	//지금의 m의 next를 null로 해줌
@@ -163,11 +163,146 @@ void add_actor() {	//actor의 정보를 입력받는 함수
 	printf("@@ Done\n\n");
 }
 
+void update_movie(){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	int number;
+	m = root_movie;
+
+printf("serial number : ");
+scanf("%d", &number);
+	while(1){
+		if(m->serial_number == number){//d->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			printf("title > ");
+			scanf("%s", temp);	//title 입력
+			m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(m->title, temp);	//temp를 구조체 멤버에 옮김
+
+			printf("genre > ");
+			scanf("%s", temp);
+			m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->genre, temp);
+
+			printf("director > ");
+			scanf("%s", temp);
+			m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->director, temp);
+
+			printf("year > ");
+			scanf("%s", temp);
+			m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->year, temp);
+
+			printf("time > ");
+			scanf("%s", temp);
+			m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->time, temp);
+
+			printf("actors > ");
+			scanf("%s", temp);
+			getchar();
+			m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->actors, temp);
+			break;
+		}
+		else if(m->next == NULL){
+			break;
+		}
+		else{
+			m = m->next;	//m을 현재 m의 next로 바꿈
+		}
+	}
+		printf("@@ Done\n\n");
+}
+
+void update_director(){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	int number;
+	d = root_director;
+
+printf("serial number : ");
+scanf("%d", &number);
+	while(1){
+		if(d->serial_number == number){//d->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			printf("name > ");
+			scanf("%s", temp);	//name 입력
+			d->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(d->name, temp);	//temp를 구조체 멤버에 옮김
+			printf("sex > ");
+			scanf("%s", temp);
+			d->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(d->sex, temp);
+
+			printf("birth > ");
+			scanf("%s", temp);
+			d->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(d->birth, temp);
+
+			printf("best_movies > ");
+			scanf("%s", temp);
+			getchar();
+			d->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(d->best_movies, temp);
+			break;
+		}
+		else if(d->next == NULL){
+			break;
+		}
+		else{
+			d = d->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+		printf("@@ Done\n\n");
+}
+
+void update_actor(){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	int number;
+	a = root_actor;
+
+printf("serial number : ");
+scanf("%d", &number);
+	while(1){
+		if(a->serial_number == number){//a->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			printf("name > ");
+			scanf("%s", temp);
+			a->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->name, temp);
+
+			printf("sex > ");
+			scanf("%s", temp);
+			a->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->sex, temp);
+
+			printf("birth > ");
+			scanf("%s", temp);
+			a->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->birth, temp);
+
+			printf("best_movies > ");
+			scanf("%s", temp);
+			getchar();
+			a->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->best_movies, temp);
+			break;
+		}
+		else if(a->next == NULL){
+			break;
+		}
+		else{
+			a = a->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+		printf("@@ Done\n\n");
+}
+
 void save_director() {
 	FILE *fp;
 	fp = fopen("director_list", "w");
 	d = root_director;
-	while (d->next != NULL) {		
+	while (d->next != NULL) {
 		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
 		d = d->next;
 	}
@@ -204,7 +339,7 @@ void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후�
 	char *cut;	//명령어 쪼개는 기준이 담긴 포인터
 	char *menu;	//명령 부분을 담는 포인터(예: update)
 	char *factor;	//인자 부분을 담는 포인터(예: m, d, a)
-	char *option;	//옵션 부분을 담는 포인터(예: 
+	char *option;	//옵션 부분을 담는 포인터(예:
 	int i;	//for문을 돌리는 변수, 왜 for문안에 선언안했냐 물으신다면 대답 안하는게 인! 지! 상! 정!
 	token = (char *)malloc(sizeof(char) * 20);	//토큰 동적 할당
 	cut = (char *)malloc(sizeof(char) * 10);	//cut 동적 할당
@@ -305,6 +440,16 @@ void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후�
 			a = a->next;
 		}
 	}
+	else if (!strcmp(input, "update m")) {//실험을 위한 임시용 변수1
+		update_movie();
+}
+else if (!strcmp(input, "update d")) {//실험을 위한 임시용 변수1
+		update_director();
+}
+else if (!strcmp(input, "update a")) {//실험을 위한 임시용 변수1
+		update_actor();
+}
+
 	else if (!strcmp(input, "save m")) {
 		save_movie();
 	}
