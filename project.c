@@ -9,7 +9,7 @@ typedef struct movie {
 	char *title;
 	char *genre;
 	char *director;
-	int year;
+	char *year;
 	char *time;
 	char *actors;
 	struct movie *next;
@@ -65,9 +65,9 @@ void add_movie(){	//movie 정보 입력받는 함수
 	strcpy(m->director, temp);
 
 	printf("year > ");
-	scanf("%d", &(m->year));
-	//m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
-	//strcpy(m->year, temp);
+	scanf("%s", temp);
+	m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+	strcpy(m->year, temp);
 
 	printf("time > ");
 	scanf("%s", temp);
@@ -200,6 +200,30 @@ void save_actor() {
 }
 
 void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
+	/*char *token;	//명령어 쪼개서 저장하는 토큰
+	char *cut;	//명령어 쪼개는 기준이 담긴 포인터
+	char *menu;	//명령 부분을 담는 포인터(예: update)
+	char *factor;	//인자 부분을 담는 포인터(예: m, d, a)
+	char *option;	//옵션 부분을 담는 포인터(예: 
+	int i;	//for문을 돌리는 변수, 왜 for문안에 선언안했냐 물으신다면 대답 안하는게 인! 지! 상! 정!
+	token = (char *)malloc(sizeof(char) * 20);	//토큰 동적 할당
+	cut = (char *)malloc(sizeof(char) * 10);	//cut 동적 할당
+	cut = " ";
+
+	token = strtok(input, cut);
+
+	for (i = 0l i < 2; i++) {
+		if (token == NULL)
+			break;
+		else if (i == 0) {
+			 = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->name, temp);
+		}
+		printf("토큰 : %s\n", token);
+		token = strtok(NULL, cut);
+	}*/
+
+
 	if (!strcmp(input, "add m"))
 		add_movie();
 	else if (!strcmp(input, "add d"))
@@ -260,11 +284,25 @@ void menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후�
 		add_actor();
 		add_movie();
 	}
-	else if (!strcmp(input, "print")) {
+	else if (!strcmp(input, "print m")) {
 		m = root_movie;
 		while(m->next != NULL) {
-			printf("%s\n", m->director);
+			printf("%s\n", m->title);
 			m = m->next;
+		}
+	}
+	else if (!strcmp(input, "print d")) {
+		d = root_director;
+		while (d->next != NULL) {
+			printf("%s\n", d->name);
+			d = d->next;
+		}
+	}
+	else if (!strcmp(input, "print a")) {
+		a = root_actor;
+		while (a->next != NULL) {
+			printf("%s\n", a->name);
+			a = a->next;
 		}
 	}
 	else if (!strcmp(input, "save m")) {
