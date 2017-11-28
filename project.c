@@ -198,6 +198,56 @@ void save_actor() {
 	fclose(fp);
 	printf("@@ Done\n\n");
 }
+void print_m(int sn){
+   m = root_movie;
+   d = root_director;
+   a = root_actor;
+   while(m->serial_number != sn){
+      if(m->next == NULL){
+         printf("serial number is not found\n");
+         return;
+      }
+      m= m->next;
+   }
+
+   while(strcmp(m->director, d->name)){
+      d = d->next;
+   }
+
+   printf("%d, %s, %s\n", m->serial_number, m->title, m->genre);
+   printf("D : %s(%s)\n", d->name, d->birth);
+}
+
+void print_d(int sn){
+   m = root_movie;
+   d = root_director;
+   a = root_actor;
+   while(d->serial_number != sn){
+      if(d->next == NULL){
+         printf("serial number is not found\n");
+         return;
+      }
+      d = d->next;
+   }
+
+   printf("%d, %s, %s\n", d->serial_number, d->name, d->birth);
+}
+
+void print_a(int sn){
+   m = root_movie;
+   d = root_director;
+   a = root_actor;
+   while(a->serial_number != sn){
+      if(a->next == NULL){
+         printf("serial number is not found\n");
+         return;
+      }
+      a = a->next;
+   }
+
+   printf("%d, %s, %s, %s\n", a->serial_number, a->name, a->sex, a->birth);
+}
+
 
 int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
 	char *temp;	//input받는 임시 변수, input을 바꾸는 사태가 일어나지 않게 해줌
@@ -237,41 +287,51 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		else if (!strcmp(factor, "a"))
 			add_actor();
 	}
-	else if (!strcmp(menu, "print")) {	//print 명령어 처리, serial_num 안붙이면 오류뜸
-		token = strtok(NULL, cut);
-		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor 확인
+   else if (!strcmp(menu, "print")) {  //print 명령어 처리, serial_num 안붙이면 오류뜸
+      token = strtok(NULL, cut);
+      factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
+      strcpy(factor, token);
+      printf("factor : %s\n", factor); //factor 확인
 
-		token = strtok(NULL, cut);
-		get_serial_num = atoi(token);	//문자열을 숫자로 변환
-		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
+      token = strtok(NULL, cut);
+      if(token == NULL){            //serial number 없을 때
+         if (!strcmp(factor, "m")) {
+            m = root_movie;
+            while (m->next != NULL) {
+               printf("%s\n", m->title);
+               m = m->next;
+            }
+            printf("\n");
+         }
+         else if (!strcmp(factor, "d")) {
+            d = root_director;
+            while (d->next != NULL) {
+               printf("%s\n", d->name);
+               d = d->next;
+            }
+            printf("\n");
+         }
+         else if (!strcmp(factor, "a")) {
+            a = root_actor;
+            while (a->next != NULL) {
+               printf("%s\n", a->name);
+               a = a->next;
+            }
+            printf("\n");
+         }
+      }
+      else{
+         get_serial_num = atoi(token); //문자열을 숫자로 변환
+         printf("num : %d\n", get_serial_num);  //get_serial_num 확인
+         if(!strcmp(factor, "m"))
+            print_m(get_serial_num);
+         else if(!strcmp(factor, "d"))
+            print_d(get_serial_num);
+         else if(!strcmp(factor, "a"))
+            print_a(get_serial_num);
+      }
 
-		if (!strcmp(factor, "m")) {	//임시 moive 출력하는 함수
-			m = root_movie;
-			while (m->next != NULL) {
-				printf("%s\n", m->title);
-				m = m->next;
-			}
-			printf("\n");
-		}
-		else if (!strcmp(factor, "d")) {	//임시 director 출력하는 함수
-			d = root_director;
-			while (d->next != NULL) {
-				printf("%s\n", d->name);
-				d = d->next;
-			}
-			printf("\n");
-		}
-		else if (!strcmp(factor, "a")) {	//임시 actor 출력하는 함수
-			a = root_actor;
-			while (a->next != NULL) {
-				printf("%s\n", a->name);
-				a = a->next;
-			}
-			printf("\n");
-		}
-	}
+   }
 	else if (!strcmp(menu, "delete")) {	//delete 명령어 처리
 		token = strtok(NULL, cut);
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
