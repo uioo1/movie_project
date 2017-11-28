@@ -204,23 +204,24 @@ void print_m(int sn){
    a = root_actor;
    while(m->serial_number != sn){
       if(m->next == NULL){
-         printf("serial number is not found\n");
+         printf("serial number is not found\n\n");
          return;
       }
-      m= m->next;
+      m = m->next;
    }
 
    while(strcmp(m->director, d->name)){
+
       d = d->next;
    }
 	
-	char *a_name;
-	char *string;
+	char *a_name = (char *)malloc(sizeof(char)*20);
+	char *string = (char *)malloc(sizeof(char)*20*10);
 
    printf("%d, %s, %s\n", m->serial_number, m->title, m->genre);
    printf("D : %s(%s)\n", d->name, d->birth);
 	strcpy(string, m->actors);
-	a_name = strtok(string, ", ");
+	a_name = strtok(string, ",");
 	while(strcmp(a_name, a->name)){
 		if(a->next == NULL){
 			printf("not found\n");
@@ -231,10 +232,13 @@ void print_m(int sn){
 	int i = 1;
 	printf("A%d : %s(%s)\n", i++, a->name, a->birth);
 	while(1){
-		a_name = strtok(NULL, ", ");
+		a_name = strtok(NULL, ",");
 		a = root_actor;
 		if(a_name == NULL)
 			break;
+		if(*a_name == ' '){
+			a_name = a_name+sizeof(char);
+		}
 		while(strcmp(a_name, a->name)){
 			if(a->next == NULL){
 				printf("not found\n");
@@ -252,21 +256,21 @@ void print_d(int sn){
    d = root_director;
    a = root_actor;
    while(d->serial_number != sn){
-      if(d->next == NULL){
-         printf("serial number is not found\n");
+      if(root_d_num == 0 || d->next == NULL){
+         printf("serial number is not found\n\n");
          return;
       }
       d = d->next;
    }
 
-	char *a_best_movie;
-	char *string;
+	char *a_best_movie = (char *)malloc(sizeof(char)*20);
+	char *string = (char *)malloc(sizeof(char)*20*10);
 
    printf("%d, %s, %s\n", d->serial_number, d->name, d->birth);
 	strcpy(string, d->best_movies);
-	a_best_movie = strtok(string, ", ");
+	a_best_movie = strtok(string, ",");
 	while(strcmp(a_best_movie, m->title)){
-		if(m->next == NULL){
+		if(root_m_num == 0 || m->next == NULL){
 			printf("not found\n");
 			break;
 		}
@@ -274,12 +278,14 @@ void print_d(int sn){
 	}
 	printf("%s, %s, %s\n", m->title, m->year, m->time);
 	while(1){		//두번째 대표작부터의 반복문
-		a_best_movie = strtok(NULL, ", ");
+		a_best_movie = strtok(NULL, ",");
 		m = root_movie;
 		if(a_best_movie == NULL)
 			break;
+		if(*a_best_movie == ' ')
+			a_best_movie = a_best_movie+sizeof(char);
 		while(strcmp(a_best_movie, m->title)){
-				if(m->next == NULL){
+				if(root_m_num ==0 ||m->next == NULL){
 					printf("not found\n");
 					break;
 				}
@@ -298,22 +304,22 @@ void print_a(int sn){
    a = root_actor;
    while(a->serial_number != sn){
       if(a->next == NULL){
-         printf("serial number is not found\n");
+         printf("serial number is not found\n\n");
          return;
       }
       a = a->next;
    }
 
-	char *a_best_movie;
-	char *string;
+	char *a_best_movie = (char *)malloc(sizeof(char)*20);
+	char *string = (char *)malloc(sizeof(char)*20*10);
 
    printf("%d, %s, %s, %s\n", a->serial_number, a->name, a->sex, a->birth);
 	strcpy(string, a->best_movies);
-	a_best_movie = strtok(string, ", ");
+	a_best_movie = strtok(string, ",");
 	while(strcmp(a_best_movie, m->title)){
 		if(m->next == NULL){
 			printf("not found\n");
-			break;
+			return;
 		}
 		m = m->next;
 	}
@@ -323,6 +329,8 @@ void print_a(int sn){
 		m = root_movie;
 		if(a_best_movie == NULL)
 			break;
+		if(*a_best_movie == ' ')
+			a_best_movie = a_best_movie+sizeof(char);
 		while(strcmp(a_best_movie, m->title)){
 				if(m->next == NULL){
 					printf("not found\n");
@@ -407,15 +415,30 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
             printf("\n");
          }
       }
-      else{
+      else{ 				//serial number 있을 때
          get_serial_num = atoi(token); //문자열을 숫자로 변환
          printf("num : %d\n", get_serial_num);  //get_serial_num 확인
-         if(!strcmp(factor, "m"))
+         if(!strcmp(factor, "m")){
+				if(root_m_num == 0){
+					printf("저장된 movie가 없습니다.\n\n");
+					return 1;
+				}
             print_m(get_serial_num);
-         else if(!strcmp(factor, "d"))
+			}
+         else if(!strcmp(factor, "d")){
+				if(root_d_num == 0){
+					printf("저장된 director가 없습니다.\n\n");
+					return 1;
+				}
             print_d(get_serial_num);
-         else if(!strcmp(factor, "a"))
+			}
+         else if(!strcmp(factor, "a")){
+				if(root_a_num == 0){
+					printf("저장된 actor가 없습니다.\n\n");
+					return 1;
+				}
             print_a(get_serial_num);
+			}
       }
 
    }
