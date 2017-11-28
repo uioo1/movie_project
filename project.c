@@ -213,9 +213,38 @@ void print_m(int sn){
    while(strcmp(m->director, d->name)){
       d = d->next;
    }
+	
+	char *a_name;
+	char *string;
 
    printf("%d, %s, %s\n", m->serial_number, m->title, m->genre);
    printf("D : %s(%s)\n", d->name, d->birth);
+	strcpy(string, m->actors);
+	a_name = strtok(string, ", ");
+	while(strcmp(a_name, a->name)){
+		if(a->next == NULL){
+			printf("not found\n");
+			break;
+		}
+		a = a->next;
+	}
+	int i = 1;
+	printf("A%d : %s(%s)\n", i++, a->name, a->birth);
+	while(1){
+		a_name = strtok(NULL, ", ");
+		a = root_actor;
+		if(a_name == NULL)
+			break;
+		while(strcmp(a_name, a->name)){
+			if(a->next == NULL){
+				printf("not found\n");
+				break;
+			}
+			a = a->next;
+		}
+		printf("A%d : %s(%s)\n", i++, a_name, a->birth);
+	}
+	printf("\n");
 }
 
 void print_d(int sn){
@@ -230,7 +259,37 @@ void print_d(int sn){
       d = d->next;
    }
 
+	char *a_best_movie;
+	char *string;
+
    printf("%d, %s, %s\n", d->serial_number, d->name, d->birth);
+	strcpy(string, d->best_movies);
+	a_best_movie = strtok(string, ", ");
+	while(strcmp(a_best_movie, m->title)){
+		if(m->next == NULL){
+			printf("not found\n");
+			break;
+		}
+		m = m->next;
+	}
+	printf("%s, %s, %s\n", m->title, m->year, m->time);
+	while(1){		//두번째 대표작부터의 반복문
+		a_best_movie = strtok(NULL, ", ");
+		m = root_movie;
+		if(a_best_movie == NULL)
+			break;
+		while(strcmp(a_best_movie, m->title)){
+				if(m->next == NULL){
+					printf("not found\n");
+					break;
+				}
+				m = m->next;
+		}
+		printf("%s, %s, %s\n", m->title, m->year, m->time);
+	}
+	printf("\n");
+
+
 }
 
 void print_a(int sn){
@@ -245,7 +304,35 @@ void print_a(int sn){
       a = a->next;
    }
 
+	char *a_best_movie;
+	char *string;
+
    printf("%d, %s, %s, %s\n", a->serial_number, a->name, a->sex, a->birth);
+	strcpy(string, a->best_movies);
+	a_best_movie = strtok(string, ", ");
+	while(strcmp(a_best_movie, m->title)){
+		if(m->next == NULL){
+			printf("not found\n");
+			break;
+		}
+		m = m->next;
+	}
+	printf("%s, %s, %s\n", m->title, m->year, m->time);
+	while(1){	//두번째 대표작부터의 반복문
+		a_best_movie = strtok(NULL, ", ");
+		m = root_movie;
+		if(a_best_movie == NULL)
+			break;
+		while(strcmp(a_best_movie, m->title)){
+				if(m->next == NULL){
+					printf("not found\n");
+					break;
+				}
+				m = m->next;
+		}
+		printf("%s, %s, %s\n", m->title, m->year, m->time);
+	}
+		printf("\n");
 }
 
 
