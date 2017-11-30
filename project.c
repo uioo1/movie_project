@@ -1,4 +1,5 @@
-﻿#include <stdio.h>
+﻿#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
@@ -39,6 +40,17 @@ actor *root_actor, *a;	//actor*의 헤더와 다른거
 int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//헤더인지 아닌지 판별할 변수
 int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//각각의 시리얼 넘버 전역변수
 
+void ctrl_c_func() {
+	char answer;
+	//answer = malloc(sizeof(char) * 5);
+	printf("\nControl+c\n");
+	printf("Get Interrupt Signal.\n");
+	printf("Do you want to exit myMOVIE program? (Y/N) ");
+	scanf("%c", &answer);
+	printf("answer : %c", answer);
+	if (answer == 'n' || answer == 'N')
+		exit(1);
+}
 void add_movie(){	//movie 정보 입력받는 함수
 	char *temp;	//글자를 입력받을 임시 포인터
 	temp = (char *)malloc(sizeof(char) * 200);	//임시 포인터 동적할당
@@ -222,8 +234,10 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 	strcpy(menu, token);
 	printf("menu : %s\n", menu);
 
-	if (!strcmp(menu, "end"))
+	if (!strcmp(menu, "end")) {
+		printf("\n");
 		return 0;	//exit_num을 0으로 만들어 종료하기
+	}
 	else if (!strcmp(menu, "add")) {	//add 명령어 처리
 		token = strtok(NULL, cut);
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
@@ -280,7 +294,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 
 		token = strtok(NULL, cut);
 		get_serial_num = atoi(token);
-		printf("num : %s\n", get_serial_num);	//get_serial_num 확인
+		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 
 		if (!strcmp(factor, "m"))
 			;	//moive 삭제하는 함수
@@ -384,6 +398,15 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		save_actor();
 	}
 
+	free(temp);	//동적 할당한 메모리들 다 반납해준다
+	free(token);	//힙에 저장되서 함수끝나도 반납안돼서 이렇게 해야됨
+	free(cut);
+	free(menu);
+	free(factor);
+	free(option);
+	free(string);
+	free(file_name);
+
 	return 1;
 }
 
@@ -394,6 +417,9 @@ int main(void) {
 	int exit_num = 1;	//프로그램 끝내는 변수
 	char *input_words;
 	input_words = (char *)malloc(sizeof(char) * 50);
+	signal(SIGINT, ctrl_c_func);	//Ctrl + c를 눌렀을때 바로 종료되지 않고 물어보기
+	
+
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
 	printf("You can use add, update, delete, search, sort, save, end commands.\n");
