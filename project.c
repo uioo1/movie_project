@@ -41,6 +41,8 @@ int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//헤더인지 아닌지 판
 int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//각각의 시리얼 넘버 전역변수
 int ctrl_c_num = 0;	//ctrl+c 받았을때 앞의 거를 다시 출력하게 해주는 전역변수
 
+char *colon_proc(char *);
+
 void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 놓는 함수(미완성)
 	FILE *fp;
 	fp = fopen("r", "movie_log");
@@ -65,7 +67,7 @@ void load_actor() {	//actor_log를 읽어서 a 링크드 리스트를 만들어 
 void handler(int sig) {	//Ctrl + c 눌러도 종료되지 않고 물어보게 하는 함수
 	char *answer;
 	answer = (char *)malloc(sizeof(char) * 5);
-	printf("\nControl+c %d\n", sig);
+	printf("\nControl+c\n");
 	printf("Get Interrupt Signal.\n");
 	printf("Do you want to exit myMOVIE program? (Y/N) ");
 	scanf("%s", answer);
@@ -204,7 +206,7 @@ void save_director() {
 	fp = fopen("director_list", "w");
 	d = root_director;
 	while (d->next != NULL) {		
-		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
+		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, colon_proc(d->name), colon_proc(d->sex), colon_proc(d->birth), colon_proc(d->best_movies));
 		d = d->next;
 	}
 	fclose(fp);
@@ -216,7 +218,7 @@ void save_movie() {
 	fp = fopen("movie_list", "w");
 	m = root_movie;
 	while (m->next != NULL) {
-		fprintf(fp, "%d:%s:%s:%s:%s:%s\n", m->serial_number, m->title, m->genre, m->director, m->year, m->time);
+		fprintf(fp, "%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time));
 		m = m->next;
 	}
 	fclose(fp);
@@ -228,16 +230,47 @@ void save_actor() {
 	fp = fopen("actor_list", "w");
 	a = root_actor;
 	while (a->next != NULL) {
-		fprintf(fp, "%d:%s:%s:%s:%s\n", a->serial_number, a->name, a->sex, a->birth, a->best_movies);
+		fprintf(fp, "%d:%s:%s:%s:%s\n", a->serial_number, colon_proc(a->name), colon_proc(a->sex), colon_proc(a->birth), colon_proc(a->best_movies));
 		a = a->next;
 	}
 	fclose(fp);
 	printf("@@ Done\n\n");
 }
 
-char *colon_process(char *string) {	//':'을 "??;"으로 바꿔주는 함수, char *을 받아서 char *을 리턴한다
+char *colon_proc(char *s) {	//':'을 "??;"로 치환하는 함수
+	char *result, *sr;
+	char *colon, *newstr;
+	colon = (char *)malloc(sizeof(char) * 2);
+	newstr = (char *)malloc(sizeof(char) * 4);
+	colon = ":";
+	newstr = "??;";
 
-	return string;
+	size_t i, count = 0;
+	size_t colonlen = strlen(colon);
+	size_t newlen = strlen(newstr);
+
+	for (i = 0; s[i] != '\0';) {
+		if (memcmp(&s[i], colon, colonlen) == 0) {
+			count++;
+			i += colonlen;
+		}
+		else i++;
+	}
+
+	result = (char *)malloc(i + 1 + count * (newlen - colonlen));
+
+	sr = result;
+	while (*s) {
+		if (memcmp(s, colon, colonlen) == 0) {
+			memcpy(sr, newstr, newlen);
+			sr += newlen;
+			s += colonlen;
+		}
+		else *sr++ = *s++;
+	}
+	*sr = '\0';
+
+	return result;
 }
 
 int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
@@ -412,12 +445,10 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 					strcpy(file_name, token);
 					printf("file_name : %s\n", file_name);	//file_name 확인
 				}
-			}	
+			}
 		}
 		printf("\n");
 	}
-
-	
 
 	if (!strcmp(input, "save m")) {	//임시 movie 세이브
 		save_movie();
