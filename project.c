@@ -41,22 +41,24 @@ int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//헤더인지 아닌지 판
 int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//각각의 시리얼 넘버 전역변수
 int ctrl_c_num = 0;	//ctrl+c 받았을때 앞의 거를 다시 출력하게 해주는 전역변수
 
-void load_movie() {
+void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 놓는 함수(미완성)
 	FILE *fp;
-	fp = fopen("r", 'movie_log');
+	fp = fopen("r", "movie_log");
+	
+	fclose(fp);
+}
+
+void load_director() {	//director_log를 읽어서 d 링크드 리스트를 만들어 놓는 함수(미완성)
+	FILE *fp;
+	fp = fopen("r", "director_log");
 
 	fclose(fp);
 }
 
-void load_director() {
+void load_actor() {	//actor_log를 읽어서 a 링크드 리스트를 만들어 놓는 함수(미완성)
 	FILE *fp;
-	fp = fopen("r", 'director_log');
-	fclose(fp);
-}
+	fp = fopen("r", "actor_log");
 
-void load_actor() {
-	FILE *fp;
-	fp = fopen("r", 'actor_log');
 	fclose(fp);
 }
 
@@ -233,6 +235,11 @@ void save_actor() {
 	printf("@@ Done\n\n");
 }
 
+char *colon_process(char *string) {	//':'을 "??;"으로 바꿔주는 함수, char *을 받아서 char *을 리턴한다
+
+	return string;
+}
+
 int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
 	char *temp;	//input받는 임시 변수, input을 바꾸는 사태가 일어나지 않게 해줌
 	char *token;	//명령어 쪼개서 저장하는 토큰
@@ -326,11 +333,13 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 	}
 	else if (!strcmp(menu, "search")) {	//search 명령어 처리
 		token = strtok(NULL, cut);
-		option = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(option, token);
-		printf("option : %s\n", option);	//option 확인
+		if (*token == '-') {
+			option = (char *)malloc(sizeof(char) * strlen(token) + 1);
+			strcpy(option, token);
+			printf("option : %s\n", option);	//option 확인
+			token = strtok(NULL, cut);
+		}
 
-		token = strtok(NULL, cut);
 		string = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(string, token);
 		printf("string : %s\n", string);	//string 확인
@@ -342,13 +351,14 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		printf("factor : %s\n", factor);	//factor 확인
 
 		token = strtok(NULL, cut);
-		option = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(option, token);
-		printf("option : %s\n", option);	//option 확인
-
-		token = strtok(NULL, cut);
+		if (*token >= '9') {	//숫자가 아닌 알파벳이면 option으로 넣기
+			option = (char *)malloc(sizeof(char) * strlen(token) + 1);
+			strcpy(option, token);
+			printf("option : %s\n", option);	//option 확인
+			token = strtok(NULL, cut);
+		}		
 		get_serial_num = atoi(token);
-		printf("num : %s\n", get_serial_num);	//get_serial_num 확인
+		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 	}
 	else if (!strcmp(menu, "sort")) {	//sort 명령어 처리
 		token = strtok(NULL, cut);
