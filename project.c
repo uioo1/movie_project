@@ -121,7 +121,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
 	
-	fprintf(fp, "add:%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time));
+	fprintf(fp, "add:%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time), colon_proc(m->actor));
 
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
 	m = m->next;	//m을 현재 m의 next로 바꿈
@@ -234,7 +234,7 @@ void save_movie() {
 	fp = fopen("movie_list", "wt");
 	m = root_movie;
 	while (m->next != NULL) {
-		fprintf(fp, "%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time));
+		fprintf(fp, "%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time), colon_proc(m->actor));
 		m = m->next;
 	}
 	fclose(fp);
