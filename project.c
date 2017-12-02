@@ -79,6 +79,9 @@ void handler(int sig) {	//Ctrl + c 눌러도 종료되지 않고 물어보게 �
 
 void add_movie(){	//movie 정보 입력받는 함수
 	char *temp;	//글자를 입력받을 임시 포인터
+	FILE *fp;
+	fp = fopen("movie_log", "at");
+
 	temp = (char *)malloc(sizeof(char) * 200);	//임시 포인터 동적할당
 
 	if (root_m_num == 0) {	//링크드 리스트 처음 헤더를 root_movie에 저장
@@ -118,16 +121,21 @@ void add_movie(){	//movie 정보 입력받는 함수
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
 	
+	fprintf(fp, "add:%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time));
+
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
 	m = m->next;	//m을 현재 m의 next로 바꿈
 	m->next = NULL;	//지금의 m의 next를 null로 해줌
 
+	fclose(fp);
 	printf("@@ Done\n\n");
 }
 
 void add_director() {	//director 정보 입력받는 함수
 	char *temp;
+	FILE *fp;
 	temp = (char *)malloc(sizeof(char) * 200);
+	fp = fopen("director_log", "at");
 
 	if (root_d_num == 0) {	//링크드 리스트 처음 헤더를 root_director에 저장
 		root_director = d;
@@ -156,16 +164,21 @@ void add_director() {	//director 정보 입력받는 함수
 	d->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(d->best_movies, temp);
 
+	fprintf(fp, "add:%d:%s:%s:%s:%s\n", d->serial_number, colon_proc(d->name), colon_proc(d->sex), colon_proc(d->birth), colon_proc(d->best_movies));
+
 	d->next = (director *)malloc(sizeof(director));	//d의 next포인터를 동적할당
 	d = d->next;	//d를 현재 d의 next로 바꿈
 	d->next = NULL;	//지금의 d의 next를 null로 해줌
 
+	fclose(fp);
 	printf("@@ Done\n\n");
 }
 
 void add_actor() {	//actor의 정보를 입력받는 함수
 	char *temp;
+	FILE *fp;
 	temp = (char *)malloc(sizeof(char) * 200);
+	fp = fopen("actor_log", "at");
 
 	if (root_a_num == 0) {	//링크드 리스트 처음 헤더를 root_actor에 저장
 		root_actor = a;
@@ -194,16 +207,19 @@ void add_actor() {	//actor의 정보를 입력받는 함수
 	a->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(a->best_movies, temp);
 
+	fprintf(fp, "add:%d:%s:%s:%s:%s\n", a->serial_number, colon_proc(a->name), colon_proc(a->sex), colon_proc(a->birth), colon_proc(a->best_movies));
+
 	a->next = (actor *)malloc(sizeof(actor));	//a의 next포인터를 동적할당
 	a = a->next;	//a을 현재 a의 next로 바꿈
 	a->next = NULL;	//지금의 a의 next를 null로 해줌
 
+	fclose(fp);
 	printf("@@ Done\n\n");
 }
 
 void save_director() {
 	FILE *fp;
-	fp = fopen("director_list", "w");
+	fp = fopen("director_list", "wt");
 	d = root_director;
 	while (d->next != NULL) {		
 		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, colon_proc(d->name), colon_proc(d->sex), colon_proc(d->birth), colon_proc(d->best_movies));
@@ -215,7 +231,7 @@ void save_director() {
 
 void save_movie() {
 	FILE *fp;
-	fp = fopen("movie_list", "w");
+	fp = fopen("movie_list", "wt");
 	m = root_movie;
 	while (m->next != NULL) {
 		fprintf(fp, "%d:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time));
@@ -227,7 +243,7 @@ void save_movie() {
 
 void save_actor() {
 	FILE *fp;
-	fp = fopen("actor_list", "w");
+	fp = fopen("actor_list", "wt");
 	a = root_actor;
 	while (a->next != NULL) {
 		fprintf(fp, "%d:%s:%s:%s:%s\n", a->serial_number, colon_proc(a->name), colon_proc(a->sex), colon_proc(a->birth), colon_proc(a->best_movies));
