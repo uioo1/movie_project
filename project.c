@@ -1,4 +1,5 @@
-﻿#include <stdio.h>
+﻿#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
@@ -38,6 +39,41 @@ director *root_director, *d;	//director*의 헤더와 다른거
 actor *root_actor, *a;	//actor*의 헤더와 다른거
 int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//헤더인지 아닌지 판별할 변수
 int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//각각의 시리얼 넘버 전역변수
+int ctrl_c_num = 0;	//ctrl+c 받았을때 앞의 거를 다시 출력하게 해주는 전역변수
+
+void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 놓는 함수(미완성)
+	FILE *fp;
+	fp = fopen("r", "movie_log");
+	
+	fclose(fp);
+}
+
+void load_director() {	//director_log를 읽어서 d 링크드 리스트를 만들어 놓는 함수(미완성)
+	FILE *fp;
+	fp = fopen("r", "director_log");
+
+	fclose(fp);
+}
+
+void load_actor() {	//actor_log를 읽어서 a 링크드 리스트를 만들어 놓는 함수(미완성)
+	FILE *fp;
+	fp = fopen("r", "actor_log");
+
+	fclose(fp);
+}
+
+void handler(int sig) {	//Ctrl + c 눌러도 종료되지 않고 물어보게 하는 함수
+	char *answer;
+	answer = (char *)malloc(sizeof(char) * 5);
+	printf("\nControl+c %d\n", sig);
+	printf("Get Interrupt Signal.\n");
+	printf("Do you want to exit myMOVIE program? (Y/N) ");
+	scanf("%s", answer);
+	//printf("answer : %s\n", answer);
+	//printf("%d, %d\n", !strcmp(answer, "y"), !strcmp(answer, "Y"));
+	if (!strcmp(answer, "y") || !strcmp(answer, "Y"))
+		exit(1);
+}
 
 void add_movie(){	//movie 정보 입력받는 함수
 	char *temp;	//글자를 입력받을 임시 포인터
@@ -48,7 +84,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 		root_m_num = 1;
 	}	
 	m->serial_number = serial_m_num++;
-
+	!
 	printf("title > ");
 	gets(temp);	//title 입력
 	m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
@@ -198,6 +234,12 @@ void save_actor() {
 	fclose(fp);
 	printf("@@ Done\n\n");
 }
+
+char *colon_process(char *string) {	//':'을 "??;"으로 바꿔주는 함수, char *을 받아서 char *을 리턴한다
+
+	return string;
+}
+
 void print_m(int sn){
    m = root_movie;
    d = root_director;
@@ -232,6 +274,7 @@ void print_m(int sn){
 	a_name = strtok(string, ",");
 	
 	int i = 1;
+	/*
 	
 	if(root_a_num  == 0){
 		printf("A%d : %s(-)\n", i++, m->actors);
@@ -250,7 +293,6 @@ void print_m(int sn){
 		printf("A%d : %s(%s)\n", i++, a->next == NULL ? "-" : a->birth, a_name);
 	}
 	
-	/*
 	while(1){
 		a_name = strtok(NULL, ",");
 		a = root_actor;
@@ -272,7 +314,6 @@ void print_m(int sn){
 	
 	printf("\n");
 }
-
 void print_d(int sn){
    m = root_movie;
    d = root_director;
@@ -291,6 +332,7 @@ void print_d(int sn){
    printf("%d, %s, %s\n", d->serial_number, d->name, d->birth);
 	strcpy(string, d->best_movies);
 	a_best_movie = strtok(string, ",");
+	/*
 	while(strcmp(a_best_movie, m->title)){
 		if(root_m_num == 0 || m->next == NULL){
 			printf("not found\n");
@@ -315,11 +357,13 @@ void print_d(int sn){
 		}
 		printf("%s, %s, %s\n", m->title, m->year, m->time);
 	}
+	*/
 	printf("\n");
 
 
 }
-
+	
+	
 void print_a(int sn){
    m = root_movie;
    d = root_director;
@@ -338,6 +382,7 @@ void print_a(int sn){
    printf("%d, %s, %s, %s\n", a->serial_number, a->name, a->sex, a->birth);
 	strcpy(string, a->best_movies);
 	a_best_movie = strtok(string, ",");
+	/*
 	while(strcmp(a_best_movie, m->title)){
 		if(m->next == NULL){
 			printf("not found\n");
@@ -362,9 +407,10 @@ void print_a(int sn){
 		}
 		printf("%s, %s, %s\n", m->title, m->year, m->time);
 	}
+	*/
 		printf("\n");
 }
-
+	
 
 int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
 	char *temp;	//input받는 임시 변수, input을 바꾸는 사태가 일어나지 않게 해줌
@@ -389,8 +435,9 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 	strcpy(menu, token);
 	printf("menu : %s\n", menu);
 
-	if (!strcmp(menu, "end"))
-		return 0;	//exit_num을 0으로 만들어 종료하기
+	if (!strcmp(menu, "end")) {
+		return 0;	//quit_num을 0으로 만들어 종료하기
+	}
 	else if (!strcmp(menu, "add")) {	//add 명령어 처리
 		token = strtok(NULL, cut);
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
@@ -404,7 +451,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		else if (!strcmp(factor, "a"))
 			add_actor();
 	}
-   else if (!strcmp(menu, "print")) {  //print 명령어 처리, serial_num 안붙이면 오류뜸
+   else if (!strcmp(menu, "print")) {  //print 명령어 처리, 목록에 없는 거 출력해야 할 때 오류남.
       token = strtok(NULL, cut);
       factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
       strcpy(factor, token);
@@ -484,7 +531,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 
 		token = strtok(NULL, cut);
 		get_serial_num = atoi(token);
-		printf("num : %s\n", get_serial_num);	//get_serial_num 확인
+		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 
 		if (!strcmp(factor, "m"))
 			;	//moive 삭제하는 함수
@@ -495,11 +542,13 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 	}
 	else if (!strcmp(menu, "search")) {	//search 명령어 처리
 		token = strtok(NULL, cut);
-		option = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(option, token);
-		printf("option : %s\n", option);	//option 확인
+		if (*token == '-') {
+			option = (char *)malloc(sizeof(char) * strlen(token) + 1);
+			strcpy(option, token);
+			printf("option : %s\n", option);	//option 확인
+			token = strtok(NULL, cut);
+		}
 
-		token = strtok(NULL, cut);
 		string = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(string, token);
 		printf("string : %s\n", string);	//string 확인
@@ -511,13 +560,14 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		printf("factor : %s\n", factor);	//factor 확인
 
 		token = strtok(NULL, cut);
-		option = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(option, token);
-		printf("option : %s\n", option);	//option 확인
-
-		token = strtok(NULL, cut);
+		if (*token >= '9') {	//숫자가 아닌 알파벳이면 option으로 넣기
+			option = (char *)malloc(sizeof(char) * strlen(token) + 1);
+			strcpy(option, token);
+			printf("option : %s\n", option);	//option 확인
+			token = strtok(NULL, cut);
+		}		
 		get_serial_num = atoi(token);
-		printf("num : %s\n", get_serial_num);	//get_serial_num 확인
+		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 	}
 	else if (!strcmp(menu, "sort")) {	//sort 명령어 처리
 		token = strtok(NULL, cut);
@@ -595,17 +645,18 @@ int main(void) {
 	m = (movie *)malloc(sizeof(movie));	//movie *m 전역 구조체 동적할당
 	d = (director *)malloc(sizeof(director));	//director *d 전역 구조체 동적할당
 	a = (actor *)malloc(sizeof(actor));	//actor *a 전역 구조체 동적할당
-	int exit_num = 1;	//프로그램 끝내는 변수
+	int quit_num = 1;	//프로그램 끝내는 변수
 	char *input_words;
-	input_words = (char *)malloc(sizeof(char) * 50);
+	input_words = (char *)malloc(sizeof(char) * 50);		
+
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
-	printf("You can use add, update, delete, search, sort, save, end commands.\n");
-
-	while (exit_num) {
+	printf("You can use add, update, delete, search, sort, save, end commands.\n");	
+	signal(SIGINT, handler);	//Ctrl + c를 눌렀을때 바로 종료되지 않고 물어보기
+	while (quit_num) {
 		printf("(movie) ");
 		gets(input_words);
-		exit_num = menu_func(input_words);		
+		quit_num = menu_func(input_words);		
 	}
 	return 0;
 }
