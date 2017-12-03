@@ -44,7 +44,7 @@ int ctrl_c_num = 0;	//ctrl+c 받았을때 앞의 거를 다시 출력하게 해�
 void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 놓는 함수(미완성)
 	FILE *fp;
 	fp = fopen("r", "movie_log");
-	
+
 	fclose(fp);
 }
 
@@ -82,7 +82,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	if (root_m_num == 0) {	//링크드 리스트 처음 헤더를 root_movie에 저장
 		root_movie = m;
 		root_m_num = 1;
-	}	
+	}
 	m->serial_number = serial_m_num++;
 	!
 	printf("title > ");
@@ -94,7 +94,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	gets(temp);
 	m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->genre, temp);
-	
+
 	printf("director > ");
 	gets(temp);
 	m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
@@ -110,12 +110,12 @@ void add_movie(){	//movie 정보 입력받는 함수
 	getchar();
 	m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->time, temp);
-	
+
 	printf("actors > ");
 	gets(temp);
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
-	
+
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
 	m = m->next;	//m을 현재 m의 next로 바꿈
 	m->next = NULL;	//지금의 m의 next를 null로 해줌
@@ -203,7 +203,7 @@ void save_director() {
 	FILE *fp;
 	fp = fopen("director_list", "w");
 	d = root_director;
-	while (d->next != NULL) {		
+	while (d->next != NULL) {
 		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
 		d = d->next;
 	}
@@ -241,176 +241,227 @@ char *colon_process(char *string) {	//':'을 "??;"으로 바꿔주는 함수, ch
 }
 
 void print_m(int sn){
-   m = root_movie;
-   d = root_director;
-   a = root_actor;
-   while(m->serial_number != sn){
-      if(m->next == NULL){
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+   while(m_p->serial_number != sn){
+      if(m_p->next == NULL){
          printf("serial number is not found\n\n");
          return;
       }
-      m = m->next;
+      m_p = m_p->next;
    }
-   printf("%d, %s, %s\n", m->serial_number, m->title, m->genre);
-	printf("D : %s", m->director);
+   printf("%d, %s, %s\n", m_p->serial_number, m_p->title, m_p->genre);
+	printf("D : %s", m_p->director);
 	if(root_d_num == 0){
 		printf("(-)\n");
 	}
 	else{
-   	while(strcmp(m->director, d->name)){
-			if(d->next == NULL){
-				printf("(-)\n");
+   	while(1){
+			if(d_p->next == NULL){
+					break;
+			}
+			if(!strcmp(m_p->director, d_p->name)){
 				break;
 			}
-   	   d = d->next;
+   	   d_p = d_p->next;
    	}
-		printf("(%s)\n", d->birth);
+		printf("(%s)\n", d_p->next==NULL ? "-" : d_p->birth);
 	}
-	
+
 	char *a_name = (char *)malloc(sizeof(char)*20);
 	char *string = (char *)malloc(sizeof(char)*20*10);
 
-	strcpy(string, m->actors);
+	strcpy(string, m_p->actors);
 	a_name = strtok(string, ",");
-	
+printf("a_name : %s\n", a_name);
 	int i = 1;
-	/*
-	
-	if(root_a_num  == 0){
-		printf("A%d : %s(-)\n", i++, m->actors);
+
+	if(root_a_num == 0){
+		printf("A%d : %s(-)\n", i++, a_name);
 	}
 	else{
-		while(strcmp(a_name, a->name)){
-			printf("a-> name : %s\t a->next : %p\n", a->name, a);
-			if(a->next == NULL){
-				printf("not found\n");
+		while(1){
+			if(a_p->next == NULL)
 				break;
-			}
-			a = a->next;
+			if(!strcmp(a_name, a_p->name))
+				break;
+			a_p = a_p->next;
 		}
-	
-	
-		printf("A%d : %s(%s)\n", i++, a->next == NULL ? "-" : a->birth, a_name);
+		printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
 	}
-	
-	while(1){
-		a_name = strtok(NULL, ",");
-		a = root_actor;
-		if(a_name == NULL)
-			break;
+
+	a_name = strtok(NULL, ",");
+	while(1){ //두번째 actor부터의 반복문
+		if(a_name == NULL){
+			printf("\n");
+			return;
+		}
 		if(*a_name == ' '){
 			a_name = a_name+sizeof(char);
 		}
-		while(strcmp(a_name, a->name)){
-			if(a->next == NULL){
-				printf("not found\n");
+		a_p = root_actor;
+		while(1){
+			if(a_p->next == NULL)
 				break;
-			}
-			a = a->next;
+			if(!strcmp(a_name, a_p->name))
+				break;
+			a_p = a_p->next;
 		}
-		printf("A%d : %s(%s)\n", i++, a_name, a->birth);
+		printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
+		a_name = strtok(NULL, ",");
 	}
-	*/
-	
-	printf("\n");
+
 }
 void print_d(int sn){
-   m = root_movie;
-   d = root_director;
-   a = root_actor;
-   while(d->serial_number != sn){
-      if(root_d_num == 0 || d->next == NULL){
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+   while(d_p->serial_number != sn){
+      if(root_d_num == 0 || d_p->next == NULL){
          printf("serial number is not found\n\n");
          return;
       }
-      d = d->next;
+      d_p = d_p->next;
    }
 
 	char *a_best_movie = (char *)malloc(sizeof(char)*20);
 	char *string = (char *)malloc(sizeof(char)*20*10);
 
-   printf("%d, %s, %s\n", d->serial_number, d->name, d->birth);
-	strcpy(string, d->best_movies);
+  printf("%d, %s, %s\n", d_p->serial_number, d_p->name, d_p->birth);
+	strcpy(string, d_p->best_movies);
 	a_best_movie = strtok(string, ",");
-	/*
-	while(strcmp(a_best_movie, m->title)){
-		if(root_m_num == 0 || m->next == NULL){
-			printf("not found\n");
+
+	while(1){
+		if(a_best_movie == NULL){//best movie가 입력되지 않았을 때
+			printf("\n");
+			return;
+		}
+		if(root_m_num == 0 || m_p->next == NULL){
 			break;
 		}
-		m = m->next;
-	}
-	printf("%s, %s, %s\n", m->title, m->year, m->time);
-	while(1){		//두번째 대표작부터의 반복문
-		a_best_movie = strtok(NULL, ",");
-		m = root_movie;
-		if(a_best_movie == NULL)
+		if(!strcmp(a_best_movie, m_p->title)){
 			break;
+		}
+		m_p = m_p->next;
+	}//여기까지 수정중
+	printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+	a_best_movie = strtok(NULL, ",");
+	while(1){		//두번째 대표작부터의 반복문
+		if(a_best_movie == NULL){
+			printf("\n");
+			return;
+		}
 		if(*a_best_movie == ' ')
 			a_best_movie = a_best_movie+sizeof(char);
-		while(strcmp(a_best_movie, m->title)){
-				if(root_m_num ==0 ||m->next == NULL){
-					printf("not found\n");
+		m_p = root_movie;
+		while(1){
+				if(m_p->next == NULL)
 					break;
-				}
-				m = m->next;
+				if(!strcmp(a_best_movie, m_p->title))
+					break;
+				m_p = m_p->next;
 		}
-		printf("%s, %s, %s\n", m->title, m->year, m->time);
+		printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL? "-" : m_p->year, m_p->next==NULL? "-" : m_p->time);
+		a_best_movie = strtok(NULL, ",");
 	}
-	*/
+
 	printf("\n");
 
 
 }
-	
-	
+
+
 void print_a(int sn){
-   m = root_movie;
-   d = root_director;
-   a = root_actor;
-   while(a->serial_number != sn){
-      if(a->next == NULL){
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+   while(a_p->serial_number != sn){
+      if(a_p->next == NULL){
          printf("serial number is not found\n\n");
          return;
       }
-      a = a->next;
+      a_p = a_p->next;
    }
 
 	char *a_best_movie = (char *)malloc(sizeof(char)*20);
 	char *string = (char *)malloc(sizeof(char)*20*10);
 
-   printf("%d, %s, %s, %s\n", a->serial_number, a->name, a->sex, a->birth);
-	strcpy(string, a->best_movies);
+  printf("%d, %s, %s, %s\n", a_p->serial_number, a_p->name, a_p->sex, a_p->birth);
+
+	strcpy(string, a_p->best_movies);
 	a_best_movie = strtok(string, ",");
-	/*
-	while(strcmp(a_best_movie, m->title)){
-		if(m->next == NULL){
-			printf("not found\n");
+	while(1){
+		if(a_best_movie == NULL){
+			printf("\n"); //best movie가 아예 입력되지 않았을 때
 			return;
 		}
-		m = m->next;
-	}
-	printf("%s, %s, %s\n", m->title, m->year, m->time);
-	while(1){	//두번째 대표작부터의 반복문
-		a_best_movie = strtok(NULL, ", ");
-		m = root_movie;
-		if(a_best_movie == NULL)
+		if(m_p->next==NULL){ //best movie가 목록에 없을 때
 			break;
+		}
+		if(!strcmp(a_best_movie, m_p->title))
+			break;
+		m_p = m_p->next;
+	}
+	printf("%s, %s, %s\n", a_best_movie, m_p->next == NULL ? "-" : m_p->year, m_p->next == NULL ? "-" : m_p->time);
+	a_best_movie = strtok(NULL, ",");
+	while(1){	//두번째 대표작부터의 반복문
+		if(a_best_movie == NULL){
+			printf("\n");
+			return;
+		}
 		if(*a_best_movie == ' ')
 			a_best_movie = a_best_movie+sizeof(char);
-		while(strcmp(a_best_movie, m->title)){
-				if(m->next == NULL){
-					printf("not found\n");
+		m_p = root_movie;
+		while(1){
+				if(m_p->next == NULL){
 					break;
 				}
-				m = m->next;
-		}
-		printf("%s, %s, %s\n", m->title, m->year, m->time);
+				if(!strcmp(a_best_movie, m_p->title))
+					break;
+				m_p = m_p->next;
+			}
+		printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+		a_best_movie = strtok(NULL, ",");
 	}
-	*/
-		printf("\n");
+
 }
-	
+
+void sort(char *factor, char *option){//구조체 크기 64
+	if(strcmp(option, "NULL")){ //옵션 없이 인자만 받았을 때
+		if(!strcmp(factor, "m")){ // 영화 제목 기준 정렬
+			movie *sort_movie;
+			sort_movie = root_movie;
+			int total = 1;
+			if(root_m_num == 0){
+				printf("not record\n\n");
+				return;
+			}
+			while(m->next != NULL){
+				m=m->next;
+				total++;
+			}
+			m = root_movie;
+			//for(int i=0; i<total; i++){
+			//	sort_func(sort_movie+i*sizeof(struct movie), total, sizeof(struct movie));
+		//	}
+
+		}
+	}
+}
+
+void sort_file(char *factor, char *option, char *file_name){
+}
+
 
 int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
 	char *temp;	//input받는 임시 변수, input을 바꾸는 사태가 일어나지 않게 해줌
@@ -565,7 +616,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 			strcpy(option, token);
 			printf("option : %s\n", option);	//option 확인
 			token = strtok(NULL, cut);
-		}		
+		}
 		get_serial_num = atoi(token);
 		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 	}
@@ -575,12 +626,13 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		strcpy(factor, token);
 		printf("factor : %s\n", factor);	//factor 확인
 
-		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인 
+		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인
 			if (!strcmp(token, "-f")) {	//뒤에 있는게 -f이면
 				token = strtok(NULL, cut);	//-f 건너뛰기
 				file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 				strcpy(file_name, token);
 				printf("file_name : %s\n", file_name);	//file_name 확인
+				sort_file(factor, "NULL", file_name);
 			}
 			else {	//뒤에 있는게 옵션이면
 				option = (char *)malloc(sizeof(char) * strlen(token) + 1);
@@ -592,6 +644,10 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 					file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 					strcpy(file_name, token);
 					printf("file_name : %s\n", file_name);	//file_name 확인
+					sort_file(factor, option, file_name);
+				}
+				else{
+					sort(factor, option);
 				}
 			}
 		}
@@ -603,7 +659,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		strcpy(factor, token);
 		printf("factor : %s\n", factor);	//factor 확인
 
-		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인 
+		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인
 			if (!strcmp(token, "-f")) {	//뒤에 있는게 -f이면
 				token = strtok(NULL, cut);	//-f 건너뛰기
 				file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
@@ -621,12 +677,12 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 					strcpy(file_name, token);
 					printf("file_name : %s\n", file_name);	//file_name 확인
 				}
-			}	
+			}
 		}
 		printf("\n");
 	}
 
-	
+
 
 	if (!strcmp(input, "save m")) {	//임시 movie 세이브
 		save_movie();
@@ -647,16 +703,16 @@ int main(void) {
 	a = (actor *)malloc(sizeof(actor));	//actor *a 전역 구조체 동적할당
 	int quit_num = 1;	//프로그램 끝내는 변수
 	char *input_words;
-	input_words = (char *)malloc(sizeof(char) * 50);		
+	input_words = (char *)malloc(sizeof(char) * 50);
 
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
-	printf("You can use add, update, delete, search, sort, save, end commands.\n");	
+	printf("You can use add, update, delete, search, sort, save, end commands.\n");
 	signal(SIGINT, handler);	//Ctrl + c를 눌렀을때 바로 종료되지 않고 물어보기
 	while (quit_num) {
 		printf("(movie) ");
 		gets(input_words);
-		quit_num = menu_func(input_words);		
+		quit_num = menu_func(input_words);
 	}
 	return 0;
 }
