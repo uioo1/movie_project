@@ -5,6 +5,17 @@
 #include <windows.h>
 #include <time.h>
 
+typedef struct sorting { //char형 sort를 위한 구조체
+	int serial_number;
+	char *string;
+} sorting;
+
+typedef struct sorting_num{ //int형 sort를 위한 구조체
+	int serial_number;
+	int num;
+} sorting_num;
+
+
 typedef struct movie {
 	int serial_number;
 	char *title;
@@ -435,136 +446,386 @@ void print_a(int sn){
 
 }
 
-int compare(const void *first, const void *second){
-	return strcmp(*(char **)first, *(char **)second);
-}
 
 void sort(char *factor, char *option){//구조체 크기 64
-	if(!strcmp(option, "NULL")){ //옵션 없이 인자만 받았을 때
-		if(!strcmp(factor, "m")){ // 영화 제목 기준 정렬
-			movie *m_p;
-			char **sort_m_t; //movie title 넣기 위한 포인터
-			m_p = root_movie;
-			int total = 0;
-			while(1){
-				if(m_p->next == NULL){
-					break;
-				}
-				total++;
-				m_p = m_p->next;
+	if(!strcmp(factor, "m")){ // factor == m
+		movie *m_p;
+		sorting *m_string; //movie title, serial number 넣기 위한 구조체
+		sorting m_tmp; //정렬을 위한 tmp
+		sorting_num *m_num;
+		sorting_num m_tmp_n; //int형 정렬을 위한 tmp
+		m_p = root_movie;
+		int total = 0;
+		while(1){
+			if(m_p->next == NULL){
+				break;
 			}
-			printf("total : %d\n", total);
+			total++;
+			m_p = m_p->next;
+		}
+		printf("total : %d\n", total);
+		m_string = (sorting *)malloc(sizeof(sorting)*total);
 
+
+		if(!strcmp(option, "NULL") || !strcmp(option, "t")){ //option ==NULL or t
 			m_p = root_movie;
-			sort_m_t = (char **)malloc(sizeof(char*)*total);
 			for(int i=0; i<total; i++){
-				*(sort_m_t+i) = (char *)malloc(sizeof(char)*20);
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->title)+1);
+				strcpy((*(m_string+i)).string, m_p->title);
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
+					}
+				}
 			}
 			for(int i=0; i<total; i++){
-				strcpy(*(sort_m_t+i), m_p->title);
+				print_m((*(m_string+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "g")){ //factor == m, option == g
+			m_p = root_movie;
+			for(int i=0; i<total; i++){
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->genre)+1);
+				strcpy((*(m_string+i)).string, m_p->genre);
+				(*(m_string+i)).serial_number = m_p->serial_number;
 				m_p=m_p->next;
 	//			printf("%s\n", *(sort_m_t+i));
 			}
-			qsort(sort_m_t, total, sizeof(char *), compare);
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
+					}
+				}
+			}
 			for(int i=0; i<total; i++){
+				print_m((*(m_string+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "d")){ //factor == m, option == d
+			m_p = root_movie;
+			for(int i=0; i<total; i++){
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->director)+1);
+				strcpy((*(m_string+i)).string, m_p->director);
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+		//			printf("%s\n", *(sort_m_t+i));
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_m((*(m_string+i)).serial_number);
+			}
+		}
+
+		else if(!strcmp(option, "y")){ //option == y (연도는 int형으로 비교)
+			m_p = root_movie;
+			m_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				(*(m_num+i)).num = atoi(m_p->year);
+				(*(m_num+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(m_num+j)).num > (*(m_num+j+1)).num){
+						m_tmp_n = *(m_num+j);
+						*(m_num+j) = *(m_num+j+1);
+						*(m_num+j+1) = m_tmp_n;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_m((*(m_num+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "t")){ //option == t (시간은 int형으로 비교)
+			m_p = root_movie;
+			m_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				(*(m_num+i)).num = atoi(m_p->time);
+				(*(m_num+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(m_num+j)).num > (*(m_num+j+1)).num){
+						m_tmp_n = *(m_num+j);
+						*(m_num+j) = *(m_num+j+1);
+						*(m_num+j+1) = m_tmp_n;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_m((*(m_num+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "a")){ //factor == m, option == a //걍 첫번째 배우 이름으로 함.
+			m_p = root_movie;
+			char *token;
+			char *st; //임시로 actors를 통째로 담을 포인터
+			for(int i=0; i<total; i++){
+				st = (char *)malloc(sizeof(char)+strlen(m_p->actors)+1);
+				strcpy(st, m_p->actors);
+				token = strtok(st, ",");
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(token)+1);
+				strcpy((*(m_string+i)).string, token);
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
 	//			printf("%s\n", *(sort_m_t+i));
 			}
-			for(int i=0; i<total; i++){
-				m_p = root_movie;
-				while(1){
-					if(!strcmp(m_p->title, *(sort_m_t+i))){
-						print_m(m_p->serial_number);
-						break;
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
 					}
-					m_p=m_p->next;
 				}
 			}
-		} //옵션 없이 인자만 받았을 때, 영화 제목 기준 정렬 끝
-		else if(!strcmp(factor, "d")){//감독 이름 기준 정렬
-			director *d_p;
-			char **sort_d_n; //movie title 넣기 위한 포인터
-			d_p = root_director;
-			int total = 0;
-			while(1){
-				if(d_p->next == NULL){
-					break;
-				}
-				total++;
-				d_p = d_p->next;
+			for(int i=0; i<total; i++){
+				print_m((*(m_string+i)).serial_number);
 			}
-			printf("total : %d\n", total);
+		}
+	}
+		//option ==m일 때 끝
+	else if(!strcmp(factor, "d")){ // factor == d
+		director *d_p;
+		sorting *d_string; //director의 char*형, serial number 넣기 위한 구조체
+		sorting d_tmp; //정렬을 위한 tmp
+		sorting_num *d_num; //director의 int형, serial number 넣기 위한 구조체
+		sorting_num d_tmp_n; //int형 정렬을 위한 tmp
+		d_p = root_director;
+		int total = 0;
+		while(1){
+			if(d_p->next == NULL){
+				break;
+			}
+			total++;
+			d_p = d_p->next;
+		}
+		printf("total : %d\n", total);
+		d_string = (sorting *)malloc(sizeof(sorting)*total);
 
+		if(!strcmp(option, "NULL") || !strcmp(option, "n")){ //option ==NULL or n
 			d_p = root_director;
-			sort_d_n = (char **)malloc(sizeof(char*)*total);
 			for(int i=0; i<total; i++){
-				*(sort_d_n+i) = (char *)malloc(sizeof(char)*20);
+				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(d_p->name)+1);
+				strcpy((*(d_string+i)).string, d_p->name);
+				(*(d_string+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(d_string+j)).string, (*(d_string+j+1)).string)) > 0){
+						d_tmp = *(d_string+j);
+						*(d_string+j) = *(d_string+j+1);
+						*(d_string+j+1) = d_tmp;
+					}
+				}
 			}
 			for(int i=0; i<total; i++){
-				strcpy(*(sort_d_n+i), d_p->name);
+				print_d((*(d_string+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "s")){ //option ==s
+			d_p = root_director;
+			for(int i=0; i<total; i++){
+				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(d_p->sex)+1);
+				strcpy((*(d_string+i)).string, d_p->sex);
+				(*(d_string+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(d_string+j)).string, (*(d_string+j+1)).string)) > 0){
+						d_tmp = *(d_string+j);
+						*(d_string+j) = *(d_string+j+1);
+						*(d_string+j+1) = d_tmp;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_d((*(d_string+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "b")){ //option == b (생년월일은 int형으로 비교)//어린 순으로 정렬됨.
+			d_p = root_director;
+			d_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				(*(d_num+i)).num = atoi(d_p->birth);
+				(*(d_num+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(d_num+j)).num > (*(d_num+j+1)).num){
+						d_tmp_n = *(d_num+j);
+						*(d_num+j) = *(d_num+j+1);
+						*(d_num+j+1) = d_tmp_n;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_d((*(d_num+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "m")){ //option == m 첫번째 영화 제목으로 함.
+			d_p = root_director;
+			char *token;
+			char *st; //임시로 best_movies를 통째로 담을 포인터
+			for(int i=0; i<total; i++){
+				st = (char *)malloc(sizeof(char)+strlen(d_p->best_movies)+1);
+				strcpy(st, d_p->best_movies);
+				token = strtok(st, ",");
+				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(token)+1);
+				strcpy((*(d_string+i)).string, token);
+				(*(d_string+i)).serial_number = d_p->serial_number;
 				d_p=d_p->next;
 	//			printf("%s\n", *(sort_m_t+i));
 			}
-			qsort(sort_d_n, total, sizeof(char *), compare);
-			for(int i=0; i<total; i++){
-	//			printf("%s\n", *(sort_m_t+i));
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(d_string+j)).string, (*(d_string+j+1)).string)) > 0){
+						d_tmp = *(d_string+j);
+						*(d_string+j) = *(d_string+j+1);
+						*(d_string+j+1) = d_tmp;
+					}
+				}
 			}
 			for(int i=0; i<total; i++){
-				d_p = root_director;
-				while(1){
-					if(!strcmp(d_p->name, *(sort_d_n+i))){
-						print_d(d_p->serial_number);
-						break;
-					}
-					d_p=d_p->next;
-				}
+				print_d((*(d_string+i)).serial_number);
 			}
 		}
-		else if(!strcmp(factor, "a")){//배우 이름 기준 정렬
-			actor *a_p;
-			char **sort_a_n; //movie title 넣기 위한 포인터
-			a_p = root_actor;
-			int total = 0;
-			while(1){
-				if(a_p->next == NULL){
-					break;
-				}
-				total++;
-				a_p = a_p->next;
+	}
+	else if(!strcmp(factor, "a")){ // factor == a
+		actor *a_p;
+		sorting *a_string; //director의 char*형, serial number 넣기 위한 구조체
+		sorting a_tmp; //정렬을 위한 tmp
+		sorting_num *a_num; //director의 int형, serial number 넣기 위한 구조체
+		sorting_num a_tmp_n; //int형 정렬을 위한 tmp
+		a_p = root_actor;
+		int total = 0;
+		while(1){
+			if(a_p->next == NULL){
+				break;
 			}
-			printf("total : %d\n", total);
+			total++;
+			a_p = a_p->next;
+		}
+		printf("total : %d\n", total);
+		a_string = (sorting *)malloc(sizeof(sorting)*total);
 
+		if(!strcmp(option, "NULL") || !strcmp(option, "n")){ //option ==NULL or n
 			a_p = root_actor;
-			sort_a_n = (char **)malloc(sizeof(char*)*total);
 			for(int i=0; i<total; i++){
-				*(sort_a_n+i) = (char *)malloc(sizeof(char)*20);
+				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(a_p->name)+1);
+				strcpy((*(a_string+i)).string, a_p->name);
+				(*(a_string+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(a_string+j)).string, (*(a_string+j+1)).string)) > 0){
+						a_tmp = *(a_string+j);
+						*(a_string+j) = *(a_string+j+1);
+						*(a_string+j+1) = a_tmp;
+					}
+				}
 			}
 			for(int i=0; i<total; i++){
-				strcpy(*(sort_a_n+i), a_p->name);
+				print_a((*(a_string+i)).serial_number);
+			}
+		}
+		if(!strcmp(option, "s")){ //option ==s
+			a_p = root_actor;
+			for(int i=0; i<total; i++){
+				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(a_p->sex)+1);
+				strcpy((*(a_string+i)).string, a_p->sex);
+				(*(a_string+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(a_string+j)).string, (*(a_string+j+1)).string)) > 0){
+						a_tmp = *(a_string+j);
+						*(a_string+j) = *(a_string+j+1);
+						*(a_string+j+1) = a_tmp;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_a((*(a_string+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "b")){ //option == b (생년월일은 int형으로 비교)//어린 순으로 정렬됨.
+			a_p = root_actor;
+			a_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				(*(a_num+i)).num = atoi(a_p->birth);
+				(*(a_num+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(a_num+j)).num > (*(a_num+j+1)).num){
+						a_tmp_n = *(a_num+j);
+						*(a_num+j) = *(a_num+j+1);
+						*(a_num+j+1) = a_tmp_n;
+					}
+				}
+			}
+			for(int i=0; i<total; i++){
+				print_a((*(a_num+i)).serial_number);
+			}
+		}
+		else if(!strcmp(option, "m")){ //option == m 첫번째 영화 제목으로 함.
+			a_p = root_actor;
+			char *token;
+			char *st; //임시로 best_movies를 통째로 담을 포인터
+			for(int i=0; i<total; i++){
+				st = (char *)malloc(sizeof(char)+strlen(a_p->best_movies)+1);
+				strcpy(st, a_p->best_movies);
+				token = strtok(st, ",");
+				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(token)+1);
+				strcpy((*(a_string+i)).string, token);
+				(*(a_string+i)).serial_number = a_p->serial_number;
 				a_p=a_p->next;
 	//			printf("%s\n", *(sort_m_t+i));
 			}
-			qsort(sort_a_n, total, sizeof(char *), compare);
-			for(int i=0; i<total; i++){
-	//			printf("%s\n", *(sort_m_t+i));
-			}
-			for(int i=0; i<total; i++){
-				a_p = root_actor;
-				while(1){
-					if(!strcmp(a_p->name, *(sort_a_n+i))){
-						print_a(a_p->serial_number);
-						break;
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(a_string+j)).string, (*(a_string+j+1)).string)) > 0){
+						a_tmp = *(a_string+j);
+						*(a_string+j) = *(a_string+j+1);
+						*(a_string+j+1) = a_tmp;
 					}
-					a_p=a_p->next;
 				}
 			}
+			for(int i=0; i<total; i++){
+				print_a((*(a_string+i)).serial_number);
+			}
 		}
-			//for(int i=0; i<total; i++){
-			//	sort_func(sort_movie+i*sizeof(struct movie), total, sizeof(struct movie));
-		//	}
 	}
-}
 
-void sort_file(char *factor, char *option, char *file_name){
+}
+void sort_file(char *factor, char *option, char *file_name){ //file에 저장하는 sort_file 함수
 }
 
 
@@ -800,7 +1061,6 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 	else if (!strcmp(input, "save a")) {	//임시 actor 세이브
 		save_actor();
 	}
-
 	return 1;
 }
 
