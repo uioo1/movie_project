@@ -136,7 +136,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 			token = strtok(NULL, ":");
 			token = anti_colon_proc(token);
 			printf("time : %s\n", token);
-			m_time = (char *)malloc(sizeof(char) * strlen(token) + 1);	
+			m_time = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(m_time, token);
 
 			token = strtok(NULL, ":");
@@ -152,7 +152,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 
 
 		if (!strcmp(menu, "add")) {	//tag가 add이면 실행하는 것
-			if (root_m_num == 0) {	//링크드 리스트의 처음 헤더를 저장 
+			if (root_m_num == 0) {	//링크드 리스트의 처음 헤더를 저장
 				root_movie = m_load;
 				root_m_num = 1;
 			}
@@ -180,15 +180,15 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 			while (1) {
 				if (m_load->serial_number == serial_num) {	//update하고자 하는 시리얼 넘버와 일치하면 실행
 					if (strcmp(title, "="))
-						strcpy(m_load->title, title);				
+						strcpy(m_load->title, title);
 					if (strcmp(genre, "="))
-						strcpy(m_load->genre, genre);					
+						strcpy(m_load->genre, genre);
 					if (strcmp(director, "="))
-						strcpy(m_load->director, director );					
+						strcpy(m_load->director, director );
 					if (strcmp(year, "="))
-						strcpy(m_load->year, year);					
+						strcpy(m_load->year, year);
 					if (strcmp(m_time, "="))
-						strcpy(m_load->time, m_time);					
+						strcpy(m_load->time, m_time);
 					if (strcmp(actors, "="))
 						strcpy(m_load->actors, actors);
 
@@ -222,7 +222,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 		printf("\n");
 	}
 	m = m_load;
-	
+
 	strcat(cp_file_name, nt_mon);	//movie_list파일을 새로 저장할 때 확장자를 날짜로 하게 하는 부분
 	if (atoi(nt_mday) < 10) {
 		mystrcat(cp_file_name, "0");
@@ -256,7 +256,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 	rewind(fp);	//movie_list의 맨 앞으로 파일 포인터를 옮김
 	while ((ch = fgetc(fp)) != EOF)
 		fputc(ch, fp_copy);
-	
+
 	fclose(fp);
 	fclose(fp_copy);
 	printf("\n");
@@ -350,7 +350,7 @@ void load_director() {	//director_log를 읽어서 d 링크드 리스트를 만�
 
 
 		if (!strcmp(menu, "add")) {	//tag가 add이면 실행하는 것
-			if (root_d_num == 0) {	//링크드 리스트의 처음 헤더를 저장 
+			if (root_d_num == 0) {	//링크드 리스트의 처음 헤더를 저장
 				root_director = d_load;
 				root_d_num = 1;
 			}
@@ -363,7 +363,7 @@ void load_director() {	//director_log를 읽어서 d 링크드 리스트를 만�
 			strcpy(d_load->birth, birth);
 			d_load->best_movies = (char *)malloc(sizeof(char) * strlen(best_movies) + 1);
 			strcpy(d_load->best_movies, best_movies);
-			
+
 			d_load->next = (director *)malloc(sizeof(director));	//d_load의 next포인터를 동적할당
 			d_load = d_load->next;	//d_load을 현재 d_load의 next로 바꿈
 			d_temp = d_load;	//링크드 리스트의 마지막을 d_temp에다가 저장
@@ -538,7 +538,7 @@ void load_actor() {	//actor_log를 읽어서 a 링크드 리스트를 만들어 
 
 
 		if (!strcmp(menu, "add")) {	//tag가 add이면 실행하는 것
-			if (root_a_num == 0) {	//링크드 리스트의 처음 헤더를 저장 
+			if (root_a_num == 0) {	//링크드 리스트의 처음 헤더를 저장
 				root_actor = a_load;
 				root_a_num = 1;
 			}
@@ -661,7 +661,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	if (root_m_num == 0) {	//링크드 리스트 처음 헤더를 root_movie에 저장
 		root_movie = m;
 		root_m_num = 1;
-	}	
+	}
 	m->serial_number = serial_m_num++;
 
 	printf("title > ");
@@ -673,7 +673,7 @@ void add_movie(){	//movie 정보 입력받는 함수
 	gets(temp);
 	m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->genre, temp);
-	
+
 	printf("director > ");
 	gets(temp);
 	m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
@@ -689,12 +689,12 @@ void add_movie(){	//movie 정보 입력받는 함수
 	getchar();
 	m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->time, temp);
-	
+
 	printf("actors > ");
 	gets(temp);
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
-	
+
 	fprintf(fp, "add:%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time), colon_proc(m->actors));
 
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
@@ -791,11 +791,816 @@ void add_actor() {	//actor의 정보를 입력받는 함수
 	printf("@@ Done\n\n");
 }
 
+char reinsert(){//재입력 여부를 묻는 함수
+	char con;
+	printf("You have the same record\n");
+	printf("continue?(y/n) : ");
+	scanf("%c", &con);
+	getchar();
+	return con;
+}
+
+void update_movie(char *option, int number){
+	char *temp_ti;
+  char *temp_g;
+  char *temp_d;
+  char *temp_y;
+  char *temp_r;
+  char *temp_a;
+
+	temp_ti = (char *)malloc(sizeof(char) * 200);
+  temp_g = (char *)malloc(sizeof(char) * 200);
+  temp_d = (char *)malloc(sizeof(char) * 200);
+  temp_y = (char *)malloc(sizeof(char) * 200);
+  temp_r = (char *)malloc(sizeof(char) * 200);
+  temp_a = (char *)malloc(sizeof(char) * 200);
+	m = root_movie;
+	int i = 0;
+	char con;
+
+	strcpy(temp_ti, "=");
+	strcpy(temp_g, "=");
+	strcpy(temp_d, "=");
+	strcpy(temp_y, "=");
+	strcpy(temp_r, "=");
+	strcpy(temp_a, "=");
+
+	while(1){
+		if(m->serial_number == number){
+      if(*option >= '9'){
+      	while(1){
+        	if(*(option+i) == 't'){
+          	printf("title > ");
+          	scanf("%[^\n]s", temp_ti);	//title 입력
+						getchar();
+            if(strcmp(temp_ti, m->title)){//같은 단어를 입력했을 때 확인
+							m->title = (char *)malloc(sizeof(char) * strlen(temp_ti)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+              strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+						}
+			    	else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+              if(con == 'y'){
+								m->title = (char *)malloc(sizeof(char) * strlen(temp_ti) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+                strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+              else
+                i--;
+            }
+					}
+        	else if(*(option+i) == 'g'){
+          	printf("genre > ");
+          	scanf("%[^\n]s", temp_g);
+            getchar();
+						if(strcmp(temp_g, m->genre)){//같은 단어를 입력했을 때 확인
+							m->genre = (char *)malloc(sizeof(char) * strlen(temp_ti)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->genre, temp_g);	//temp를 구조체 멤버에 옮김
+						}
+						else{
+							con = reinsert();
+							if(con == 'y'){
+								m->genre = (char *)malloc(sizeof(char) * strlen(temp_g) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(m->genre, temp_g);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+            }
+        	}
+        	else if(*(option+i) == 'd'){
+			    	printf("director > ");
+			    	scanf("%[^\n]s", temp_d);
+            getchar();
+						if(strcmp(temp_d, m->director)){//같은 단어를 입력했을 때 확인
+							m->director = (char *)malloc(sizeof(char) * strlen(temp_d)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->director, temp_d);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								m->director = (char *)malloc(sizeof(char) * strlen(temp_d) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(m->director, temp_d);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+            }
+        	}
+        	else if(*(option+i) == 'y'){
+			    	printf("year > ");
+		      	scanf("%s", temp_y);
+            getchar();
+						if(strcmp(temp_y, m->year)){//같은 단어를 입력했을 때 확인
+							m->year = (char *)malloc(sizeof(char) * strlen(temp_ti)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->year, temp_y);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								m->year = (char *)malloc(sizeof(char) * strlen(temp_y) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(m->year, temp_y);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+                i--;
+            }
+        	}
+        	else if(*(option+i) == 'r'){
+			    	printf("time > ");
+			    	scanf("%s", temp_r);
+            getchar();
+						if(strcmp(temp_r, m->time)){//같은 단어를 입력했을 때 확인
+							m->time = (char *)malloc(sizeof(char) * strlen(temp_r)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->time, temp_r);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								m->time = (char *)malloc(sizeof(char) * strlen(temp_r) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(m->time, temp_r);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+            }
+        	}
+        	else if(*(option+i) == 'a'){
+			    	printf("actors > ");
+			    	scanf("%[^\n]s", temp_a);
+			    	getchar();
+						if(strcmp(temp_a, m->actors)){//같은 단어를 입력했을 때 확인
+							m->actors = (char *)malloc(sizeof(char) * strlen(temp_a)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->actors, temp_a);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								m->actors = (char *)malloc(sizeof(char) * strlen(temp_a) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(m->actors, temp_a);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+            }
+        	}
+        	else{
+        		break;
+					}
+					i++;
+      	}
+				break;
+			}
+			else{//option에 입력이 되지 않은 경우!
+				while(1){
+					printf("title > ");
+					scanf("%[^\n]s", temp_ti);	//title 입력
+					getchar();
+					if(strcmp(temp_ti, m->title)){//같은 단어를 입력했을 때 확인
+						m->title = (char *)malloc(sizeof(char) * strlen(temp_ti)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							m->title = (char *)malloc(sizeof(char) * strlen(temp_ti) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("genre > ");
+					scanf("%[^\n]s", temp_g);
+					getchar();
+					if(strcmp(temp_g, m->genre)){//같은 단어를 입력했을 때 확인
+						m->genre = (char *)malloc(sizeof(char) * strlen(temp_g)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(m->genre, temp_g);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							m->genre = (char *)malloc(sizeof(char) * strlen(temp_g) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							strcpy(m->genre, temp_g);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+						;
+					}
+				}
+				while(1){
+					printf("director > ");
+					scanf("%[^\n]s", temp_d);
+					getchar();
+					if(strcmp(temp_d, m->director)){//같은 단어를 입력했을 때 확인
+						m->director = (char *)malloc(sizeof(char) * strlen(temp_d)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(m->director, temp_d);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							m->director = (char *)malloc(sizeof(char) * strlen(temp_d) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							strcpy(m->director, temp_d);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("year > ");
+					scanf("%s", temp_y);
+					getchar();
+					if(strcmp(temp_y, m->year)){//같은 단어를 입력했을 때 확인
+						m->title = (char *)malloc(sizeof(char) * strlen(temp_y)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(m->year, temp_y);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							m->year = (char *)malloc(sizeof(char) * strlen(temp_y) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							strcpy(m->year, temp_y);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+						}
+					}
+					while(1){
+						printf("time > ");
+						scanf("%s", temp_r);
+						getchar();
+						if(strcmp(temp_r, m->time)){//같은 단어를 입력했을 때 확인
+							m->time = (char *)malloc(sizeof(char) * strlen(temp_d)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->time, temp_r);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else{
+							con = reinsert();
+							if(con == 'y'){
+								m->time = (char *)malloc(sizeof(char) * strlen(temp_r) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+								strcpy(m->time, temp_r);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+							;
+						}
+					}
+					while(1){
+						printf("actors > ");
+						scanf("%[^\n]s", temp_a);
+						getchar();
+						if(strcmp(temp_a, m->actors)){//같은 단어를 입력했을 때 확인
+							m->actors = (char *)malloc(sizeof(char) * strlen(temp_a)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(m->actors, temp_a);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							m->actors = (char *)malloc(sizeof(char) * strlen(temp_a) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							strcpy(m->actors, temp_a);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				break;
+    	}
+		}
+			else
+				m = m->next;	//m을 현재 m의 next로 바꿈
+		}
+	  FILE *fp;
+  	fp = fopen("movie_log", "at");
+    fprintf(fp, "update:%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, temp_ti, temp_g, temp_d, temp_y, temp_r, temp_a);
+  	fclose(fp);
+    printf("@@ Done\n\n");
+}
+
+void update_director(char *option, int number){
+	char *temp_n;
+  char *temp_s;
+  char *temp_b;
+  char *temp_m;
+
+	temp_n = (char *)malloc(sizeof(char) * 200);
+	temp_s = (char *)malloc(sizeof(char) * 200);
+	temp_b = (char *)malloc(sizeof(char) * 200);
+	temp_m = (char *)malloc(sizeof(char) * 200);
+
+	d = root_director;
+	int i = 0;
+	char con;
+
+	strcpy(temp_n, "=");
+	strcpy(temp_s, "=");
+	strcpy(temp_b, "=");
+	strcpy(temp_m, "=");
+
+	while(1){
+		printf("1\n");
+		if(d->serial_number == number){
+			printf("2\n");
+      if(*option >= '9'){
+				printf("3\n");
+      	while(1){
+					if(*(option+i) == 'n'){
+          	printf("name > ");
+          	scanf("%[^\n]s", temp_n);	//title 입력
+						getchar();
+            if(strcmp(temp_n, d->name)){//같은 단어를 입력했을 때 확인
+							d->name = (char *)malloc(sizeof(char) * strlen(temp_n)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+              strcpy(d->name, temp_n);	//temp를 구조체 멤버에 옮김
+						}
+			    	else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+              if(con == 'y'){
+								d->name = (char *)malloc(sizeof(char) * strlen(temp_n) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+                strcpy(d->name, temp_n);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+              else
+                i--;
+            }
+					}
+        	else if(*(option+i) == 's'){
+          	printf("sex > ");
+          	scanf("%s", temp_s);
+            getchar();
+						if(strcmp(temp_s, d->sex)){//같은 단어를 입력했을 때 확인
+							d->sex = (char *)malloc(sizeof(char) * strlen(temp_s)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(d->sex, temp_s);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								d->sex = (char *)malloc(sizeof(char) * strlen(temp_s) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(d->sex, temp_s);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+						}
+        	}
+        	else if(*(option+i) == 'b'){
+			    	printf("birth > ");
+			    	scanf("%s", temp_b);
+            getchar();
+						if(strcmp(temp_b, d->birth)){//같은 단어를 입력했을 때 확인
+							d->birth = (char *)malloc(sizeof(char) * strlen(temp_b)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(d->birth, temp_b);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								d->birth = (char *)malloc(sizeof(char) * strlen(temp_b) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(d->birth, temp_b);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+						}
+        	}
+        	else if(*(option+i) == 'm'){
+			    	printf("best_movies > ");
+		      	scanf("%[^\n]s", temp_m);
+            getchar();
+						if(strcmp(temp_m, d->best_movies)){//같은 단어를 입력했을 때 확인
+							d->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(d->best_movies, temp_m);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								d->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(d->best_movies, temp_m);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+						}
+        	}
+        	else
+        		break;
+					i++;
+					//printf("포인터 위치 찾기 : %d", i);
+				}
+				break;
+      }
+			else{//option에 입력이 되지 않은 경우!
+				while(1){
+					printf("name > ");
+					scanf("%[^\n]s", temp_n);	//title 입력
+					getchar();
+					if(strcmp(temp_n, d->name)){//같은 단어를 입력했을 때 확인
+						d->name = (char *)malloc(sizeof(char) * strlen(temp_n)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(d->name, temp_n);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							d->name = (char *)malloc(sizeof(char) * strlen(temp_n) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("sex > ");
+					scanf("%s", temp_s);	//title 입력
+					getchar();
+					if(strcmp(temp_s, d->sex)){//같은 단어를 입력했을 때 확인
+						d->sex = (char *)malloc(sizeof(char) * strlen(temp_s)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(d->sex, temp_s);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							d->sex = (char *)malloc(sizeof(char) * strlen(temp_s) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("birth > ");
+					scanf("%s", temp_b);	//title 입력
+					getchar();
+					if(strcmp(temp_b, d->birth)){//같은 단어를 입력했을 때 확인
+						d->birth = (char *)malloc(sizeof(char) * strlen(temp_b)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(d->birth, temp_b);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							d->birth = (char *)malloc(sizeof(char) * strlen(temp_b) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("best_movies > ");
+					scanf("%s", temp_m);	//title 입력
+					getchar();
+					if(strcmp(temp_m, d->best_movies)){//같은 단어를 입력했을 때 확인
+						d->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(d->best_movies, temp_m);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							d->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				break;
+    	}
+		}
+			else if(d->next == NULL)
+				break;
+			else
+				d = d->next;	//m을 현재 m의 next로 바꿈
+		}
+	  FILE *fp;
+  	fp = fopen("director_log", "at");
+    fprintf(fp, "update:%d:%s:%s:%s:%s\n", d->serial_number, temp_n, temp_s, temp_b, temp_m);
+  	fclose(fp);
+    printf("@@ Done\n\n");
+}
+
+void update_actor(char *option, int number){
+	char *temp_n;
+  char *temp_s;
+  char *temp_b;
+  char *temp_m;
+
+	temp_n = (char *)malloc(sizeof(char) * 200);
+	temp_s = (char *)malloc(sizeof(char) * 200);
+	temp_b = (char *)malloc(sizeof(char) * 200);
+	temp_m = (char *)malloc(sizeof(char) * 200);
+
+	a = root_actor;
+	int i = 0;
+	char con;
+
+	while(1){
+		if(a->serial_number == number){
+      if(*option >= '9'){
+      	while(1){
+					if(*(option+i) == 'n'){
+          	printf("name > ");
+          	scanf("%[^\n]s", temp_n);	//title 입력
+						getchar();
+            if(strcmp(temp_n, a->name)){//같은 단어를 입력했을 때 확인
+							a->name = (char *)malloc(sizeof(char) * strlen(temp_n)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+              strcpy(a->name, temp_n);	//temp를 구조체 멤버에 옮김
+						}
+			    	else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+              if(con == 'y'){
+								a->name = (char *)malloc(sizeof(char) * strlen(temp_n) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+                strcpy(a->name, temp_n);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+              else
+                i--;
+            }
+					}
+        	else if(*(option+i) == 's'){
+          	printf("sex > ");
+          	scanf("%s", temp_s);
+            getchar();
+						if(strcmp(temp_s, a->sex)){//같은 단어를 입력했을 때 확인
+							a->sex = (char *)malloc(sizeof(char) * strlen(temp_s)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(a->sex, temp_s);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								a->sex = (char *)malloc(sizeof(char) * strlen(temp_s) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(a->sex, temp_s);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+						}
+        	}
+        	else if(*(option+i) == 'b'){
+			    	printf("birth > ");
+			    	scanf("%s", temp_b);
+            getchar();
+						if(strcmp(temp_b, a->birth)){//같은 단어를 입력했을 때 확인
+							a->birth = (char *)malloc(sizeof(char) * strlen(temp_b)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(a->birth, temp_b);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								a->birth = (char *)malloc(sizeof(char) * strlen(temp_b) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(a->birth, temp_b);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+						}
+        	}
+        	else if(*(option+i) == 'm'){
+			    	printf("best_movies > ");
+		      	scanf("%[^\n]s", temp_m);
+            getchar();
+						if(strcmp(temp_m, a->best_movies)){//같은 단어를 입력했을 때 확인
+							a->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+							strcpy(a->best_movies, temp_m);	//temp를 구조체 멤버에 옮김
+						}
+						else{//무엇을 넣든 이문장이 돌음 strcmp가 제대로 안돌아가는듯 함
+							con = reinsert();
+							if(con == 'y'){
+								a->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+								strcpy(a->best_movies, temp_m);	//temp를 구조체 멤버에 옮김
+								break;
+							}
+							else
+								i--;
+						}
+        	}
+        	else{
+        		break;
+					}
+					i++;
+      	}
+				break;
+			}
+			else{//option에 입력이 되지 않은 경우!
+				while(1){
+					printf("name > ");
+					scanf("%[^\n]s", temp_n);	//title 입력
+					getchar();
+					if(strcmp(temp_n, a->name)){//같은 단어를 입력했을 때 확인
+						a->name = (char *)malloc(sizeof(char) * strlen(temp_n)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(a->name, temp_n);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							a->name = (char *)malloc(sizeof(char) * strlen(temp_n) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("sex > ");
+					scanf("%s", temp_s);	//title 입력
+					getchar();
+					if(strcmp(temp_s, a->sex)){//같은 단어를 입력했을 때 확인
+						a->sex = (char *)malloc(sizeof(char) * strlen(temp_s)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(a->sex, temp_s);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							a->sex = (char *)malloc(sizeof(char) * strlen(temp_s) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("birth > ");
+					scanf("%s", temp_b);	//title 입력
+					getchar();
+					if(strcmp(temp_b, a->birth)){//같은 단어를 입력했을 때 확인
+						a->birth = (char *)malloc(sizeof(char) * strlen(temp_b)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(a->birth, temp_b);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							a->birth = (char *)malloc(sizeof(char) * strlen(temp_b) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				while(1){
+					printf("best_movies > ");
+					scanf("%s", temp_m);	//title 입력
+					getchar();
+					if(strcmp(temp_m, a->best_movies)){//같은 단어를 입력했을 때 확인
+						a->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m)+1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+						strcpy(a->best_movies, temp_m);	//temp를 구조체 멤버에 옮김
+						break;
+					}
+					else{
+						con = reinsert();
+						if(con == 'y'){
+							a->best_movies = (char *)malloc(sizeof(char) * strlen(temp_m) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)							strcpy(m->title, temp_ti);	//temp를 구조체 멤버에 옮김
+							break;
+						}
+						else
+							;
+					}
+				}
+				break;
+    	}
+		}
+			else if(a->next == NULL)
+				break;
+			else
+				a = a->next;	//m을 현재 m의 next로 바꿈
+		}
+	  FILE *fp;
+  	fp = fopen("actor_log", "at");
+    fprintf(fp, "update:%d:%s:%s:%s:%s\n", a->serial_number, temp_n, temp_s, temp_b, temp_m);
+  	fclose(fp);
+    printf("@@ Done\n\n");
+}
+
+
+void delete_movie(int number){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	m = root_movie;
+
+	while(1){
+		if(m->serial_number == number){//m->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			temp = "";
+			m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(m->title, temp);	//temp를 구조체 멤버에 옮김
+
+			m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->genre, temp);
+
+			m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->director, temp);
+
+			m->year = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->year, temp);
+
+			m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->time, temp);
+
+			m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(m->actors, temp);
+			break;
+		}
+		else if(m->next == NULL){
+			printf("No such record\n");
+			break;
+		}
+		else{
+			m = m->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+	FILE *fp;
+	fp = fopen("movie_log", "at");
+	fprintf(fp, "delete:%d::::::\n", m->serial_number);//아직,넣기 안함
+	fclose(fp);
+		printf("@@ Done\n\n");
+}
+
+void delete_director(int number){
+		char *temp;
+		temp = (char *)malloc(sizeof(char) * 200);
+		d = root_director;
+
+		while(1){
+			if(d->serial_number == number){//m->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+				temp = "";
+				d->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+				strcpy(d->name, temp);	//temp를 구조체 멤버에 옮김
+
+				d->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+				strcpy(d->sex, temp);
+
+				d->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+				strcpy(d->birth, temp);
+
+				d->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+				strcpy(d->best_movies, temp);
+				break;
+			}
+			else if(d->next == NULL){
+				printf("No such record\n");
+				break;
+			}
+			else{
+				d = d->next;	//d을 현재 d의 next로 바꿈
+			}
+		}
+		FILE *fp;
+		fp = fopen("director_log", "at");
+		fprintf(fp, "delete:%d::::\n", d->serial_number);//아직,넣기 안함
+		fclose(fp);
+			printf("@@ Done\n\n");
+	}
+
+void delete_actor(int number){
+	char *temp;
+	temp = (char *)malloc(sizeof(char) * 200);
+	a = root_actor;
+
+	while(1){
+		if(a->serial_number == number){//m->serial_number == number){//num입력 받은것과 비교 인데 위에서 num입력받기를 해줘야함
+			temp = "";
+
+			a->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//입력받은 글자의 크기만큼 동적할당 받음(+1은 맨뒤에 null을 넣을 공간)
+			strcpy(a->name, temp);	//temp를 구조체 멤버에 옮김
+
+			a->sex = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->sex, temp);
+
+			a->birth = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->birth, temp);
+
+			a->best_movies = (char *)malloc(sizeof(char) * strlen(temp) + 1);
+			strcpy(a->best_movies, temp);
+			break;
+		}
+		else if(a->next == NULL){
+			printf("No such record\n");
+			break;
+		}
+		else{
+			a = a->next;	//d을 현재 d의 next로 바꿈
+		}
+	}
+	FILE *fp;
+	fp = fopen("actor_log", "at");
+	fprintf(fp, "delete:%d::::\n", a->serial_number);//아직,넣기 안함
+	fclose(fp);
+		printf("@@ Done\n\n");
+}
+
+
 void save_director() {
 	FILE *fp;
 	fp = fopen("director_list", "wt");
 	d = root_director;
-	while (d->next != NULL) {	
+	while (d->next != NULL) {
 		if (d->name == NULL) {
 			d = d->next;
 			continue;
@@ -1012,11 +1817,11 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 
 		if (!strcmp(factor, "m"))
-			;	//moive 삭제하는 함수
+			delete_movie(get_serial_num);	//moive 삭제하는 함수
 		else if (!strcmp(factor, "d"))
-			;	//director 삭제하는 함수
+			delete_director(get_serial_num);	//director 삭제하는 함수
 		else if (!strcmp(factor, "a"))
-			;	//actor 삭제하는 함수
+			delete_actor(get_serial_num);	//actor 삭제하는 함수
 	}
 	else if (!strcmp(menu, "search")) {	//search 명령어 처리
 		token = strtok(NULL, cut);
@@ -1052,9 +1857,15 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 			token = strtok(NULL, cut);
 			if (token == NULL)	//시리얼 넘버 없으면 걍 넘기기
 				return 1;
-		}		
+		}
 		get_serial_num = atoi(token);
 		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
+		if (!strcmp(factor, "m"))
+			update_movie(option, get_serial_num);	//moive 수정하는 함수
+		else if (!strcmp(factor, "d"))
+			update_director(option, get_serial_num);	//director 수정하는 함수
+		else if (!strcmp(factor, "a"))
+			update_actor(option, get_serial_num);	//actor 수정하는 함수
 	}
 	else if (!strcmp(menu, "sort")) {	//sort 명령어 처리
 		token = strtok(NULL, cut);
@@ -1064,7 +1875,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		strcpy(factor, token);
 		printf("factor : %s\n", factor);	//factor 확인
 
-		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인 
+		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인
 			if (!strcmp(token, "-f")) {	//뒤에 있는게 -f이면
 				token = strtok(NULL, cut);	//-f 건너뛰기
 				if (token == NULL)	//잘못 입력하면 걍 넘기기
@@ -1098,7 +1909,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		strcpy(factor, token);
 		printf("factor : %s\n", factor);	//factor 확인
 
-		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인 
+		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인
 			if (!strcmp(token, "-f")) {	//뒤에 있는게 -f이면
 				token = strtok(NULL, cut);	//-f 건너뛰기
 				if (token == NULL)	//파일이름을 입력안하면 걍 넘기기
@@ -1144,20 +1955,20 @@ int main(void) {
 	a = (actor *)malloc(sizeof(actor));	//actor *a 전역 구조체 동적할당
 	int quit_num = 1;	//프로그램 끝내는 변수
 	char *input_words;
-	input_words = (char *)malloc(sizeof(char) * 50);	
+	input_words = (char *)malloc(sizeof(char) * 50);
 
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
 	load_movie();
 	load_director();
 	load_actor();
-	printf("You can use add, update, delete, search, sort, save, end commands.\n");	
+	printf("You can use add, update, delete, search, sort, save, end commands.\n");
 	signal(SIGINT, handler);	//Ctrl + c를 눌렀을때 바로 종료되지 않고 물어보기
-	
+
 	while (quit_num) {
 		printf("(movie) ");
 		gets(input_words);
-		quit_num = menu_func(input_words);		
+		quit_num = menu_func(input_words);
 	}
 
 	return 0;
