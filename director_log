@@ -1,0 +1,6 @@
+add:1:director??;1:m:19870624:movie1
+add:2:director3:f:19900213:movie2
+add:3:director??;4:m:19800726:nope
+update:2:director2:=:19890313:=
+delete:3::::
+add:4:director4:m:19740526:god??; of the king
