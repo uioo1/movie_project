@@ -1,7 +1,0 @@
-add:1:actor1:f:19870425:movie1
-add:2:actor2:m:19700319:movie2
-add:3:actor3:f:19870415:movie??;movie
-add:4:actor4:f:19980210:movie44
-update:3:=:m:19880420:=
-delete:4::::
-add:5:actor5:m:19680908:movie5
