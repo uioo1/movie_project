@@ -1,0 +1,7 @@
+add:1:movie1??;:sci-fi:director1:2000:120:actor1
+add:2:movie??;2:horror:director2:2002:140:actor2
+add:3:movie3:animation:director3:2004:160:actor3
+add:4:test:if:it enters:2017:100:still have?
+update:3:=:romance:=:=:=:=
+delete:4::::::
+add:5:movie5:animation:director5:2012:98:actor5
