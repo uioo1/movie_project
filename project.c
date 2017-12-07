@@ -15,7 +15,6 @@ typedef struct sorting_num{ //int형 sort를 위한 임시구조체
 	int num;
 } sorting_num;
 
-
 typedef struct movie {
 	int serial_number;
 	char *title;
@@ -64,11 +63,6 @@ char *mystrcat(char *dest, char *src) {
 }
 
 void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 놓는 함수(미완성)
-<<<<<<< HEAD
-	FILE *fp;
-	fp = fopen("r", "movie_log");
-
-=======
 	char *token, *line, *menu;	//토큰과 한줄을 저장하는 것과 메뉴(add, delete, update)를 저장할 포인터
 	char *title, *genre, *director, *year, *m_time, *actors;	//movie에 넣을 쪼개놓은 멤버들 저장할 포인터
 	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//시간들을 문자열로 변환해서 저장할 포인터와 다 합칠 부분
@@ -152,7 +146,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 			token = strtok(NULL, ":");
 			token = anti_colon_proc(token);
 			printf("time : %s\n", token);
-			m_time = (char *)malloc(sizeof(char) * strlen(token) + 1);	
+			m_time = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(m_time, token);
 
 			token = strtok(NULL, ":");
@@ -161,6 +155,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 				//printf("= is comparamised\n");
 				*(token + strlen(token) - 1) = 0;	//마지막에 읽어온 폼 피드(form feed?)를 없애줌
 			}
+			*(token + strlen(token) - 1) = 0;
 			printf("actors : %s\n", token);
 			actors = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(actors, token);
@@ -168,7 +163,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 
 
 		if (!strcmp(menu, "add")) {	//tag가 add이면 실행하는 것
-			if (root_m_num == 0) {	//링크드 리스트의 처음 헤더를 저장 
+			if (root_m_num == 0) {	//링크드 리스트의 처음 헤더를 저장
 				root_movie = m_load;
 				root_m_num = 1;
 			}
@@ -196,15 +191,15 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 			while (1) {
 				if (m_load->serial_number == serial_num) {	//update하고자 하는 시리얼 넘버와 일치하면 실행
 					if (strcmp(title, "="))
-						strcpy(m_load->title, title);				
+						strcpy(m_load->title, title);
 					if (strcmp(genre, "="))
-						strcpy(m_load->genre, genre);					
+						strcpy(m_load->genre, genre);
 					if (strcmp(director, "="))
-						strcpy(m_load->director, director );					
+						strcpy(m_load->director, director );
 					if (strcmp(year, "="))
-						strcpy(m_load->year, year);					
+						strcpy(m_load->year, year);
 					if (strcmp(m_time, "="))
-						strcpy(m_load->time, m_time);					
+						strcpy(m_load->time, m_time);
 					if (strcmp(actors, "="))
 						strcpy(m_load->actors, actors);
 
@@ -238,7 +233,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 		printf("\n");
 	}
 	m = m_load;
-	
+
 	strcat(cp_file_name, nt_mon);	//movie_list파일을 새로 저장할 때 확장자를 날짜로 하게 하는 부분
 	if (atoi(nt_mday) < 10) {
 		mystrcat(cp_file_name, "0");
@@ -272,8 +267,7 @@ void load_movie() {	//movie_log를 읽어서 m 링크드 리스트를 만들어 
 	rewind(fp);	//movie_list의 맨 앞으로 파일 포인터를 옮김
 	while ((ch = fgetc(fp)) != EOF)
 		fputc(ch, fp_copy);
-	
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
+
 	fclose(fp);
 	fclose(fp_copy);
 	printf("\n");
@@ -367,7 +361,7 @@ void load_director() {	//director_log를 읽어서 d 링크드 리스트를 만�
 
 
 		if (!strcmp(menu, "add")) {	//tag가 add이면 실행하는 것
-			if (root_d_num == 0) {	//링크드 리스트의 처음 헤더를 저장 
+			if (root_d_num == 0) {	//링크드 리스트의 처음 헤더를 저장
 				root_director = d_load;
 				root_d_num = 1;
 			}
@@ -380,7 +374,7 @@ void load_director() {	//director_log를 읽어서 d 링크드 리스트를 만�
 			strcpy(d_load->birth, birth);
 			d_load->best_movies = (char *)malloc(sizeof(char) * strlen(best_movies) + 1);
 			strcpy(d_load->best_movies, best_movies);
-			
+
 			d_load->next = (director *)malloc(sizeof(director));	//d_load의 next포인터를 동적할당
 			d_load = d_load->next;	//d_load을 현재 d_load의 next로 바꿈
 			d_temp = d_load;	//링크드 리스트의 마지막을 d_temp에다가 저장
@@ -555,7 +549,7 @@ void load_actor() {	//actor_log를 읽어서 a 링크드 리스트를 만들어 
 
 
 		if (!strcmp(menu, "add")) {	//tag가 add이면 실행하는 것
-			if (root_a_num == 0) {	//링크드 리스트의 처음 헤더를 저장 
+			if (root_a_num == 0) {	//링크드 리스트의 처음 헤더를 저장
 				root_actor = a_load;
 				root_a_num = 1;
 			}
@@ -711,11 +705,8 @@ void add_movie(){	//movie 정보 입력받는 함수
 	gets(temp);
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
-<<<<<<< HEAD
-=======
-	
+
 	fprintf(fp, "add:%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time), colon_proc(m->actors));
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
 
 	m->next = (movie *)malloc(sizeof(movie));	//m의 next포인터를 동적할당
 	m = m->next;	//m을 현재 m의 next로 바꿈
@@ -815,17 +806,12 @@ void save_director() {
 	FILE *fp;
 	fp = fopen("director_list", "wt");
 	d = root_director;
-<<<<<<< HEAD
 	while (d->next != NULL) {
-		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
-=======
-	while (d->next != NULL) {	
 		if (d->name == NULL) {
 			d = d->next;
 			continue;
 		}
 		fprintf(fp, "%d:%s:%s:%s:%s\n", d->serial_number, colon_proc(d->name), colon_proc(d->sex), colon_proc(d->birth), colon_proc(d->best_movies));
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
 		d = d->next;
 	}
 	fclose(fp);
@@ -940,6 +926,7 @@ char *anti_colon_proc(char *s) {	//'??;'을 ":"로 치환하는 함수
 	return result;
 }
 
+
 void print_m(int sn){ //movie print 함수
 	movie *m_p;
 	director *d_p;
@@ -954,65 +941,95 @@ void print_m(int sn){ //movie print 함수
       }
       m_p = m_p->next;
    }
-  printf("%d, %s, %s\n", m_p->serial_number, m_p->title, m_p->genre);
-	printf("D : %s", m_p->director);
+	if(m_p->title == NULL){ //delete된 레코드일 경우
+	 	printf("*deleted record*\n\n", m_p->serial_number);
+		return;
+	}
+
+  printf("%d, %s, %s\n", m_p->serial_number, m_p->title == NULL ? "-" : m_p->title, m_p->genre==NULL ? "-" : m_p->genre);
 	if(root_d_num == 0){ //director에 아무것도 저장이 안 돼있는 상태에서의 오류를 피하기 위한 코드
 		printf("(-)\n");
 	}
+
 	else{ //director 링크드 리스트를 읽어 해당하는 director가 있는지 검사
-   	while(1){
+		while(1){
 			if(d_p->next == NULL){
-					break;
+				break;
+			}
+			if(d_p->name == NULL){
+				d_p = d_p->next;
+				continue;
+			}
+			if(m_p->director == NULL){
+				d_p = d_p->next;
+				continue;
 			}
 			if(!strcmp(m_p->director, d_p->name)){ //해당하는 movie 레코드에서 출력하는 director가 director 레코드에 있을 경우
 				break;
 			}
    	   d_p = d_p->next;
    	}
-		printf("(%s)\n", d_p->next==NULL ? "-" : d_p->birth); //director가 레코드에 있을 경우엔 해당 레코드에서 읽어오고 없는 경우엔 "-" 출력.
+		printf("D : %s(%s)\n", m_p->director==NULL? "-":m_p->director, d_p->next==NULL ? "-" : d_p->birth); //director가 레코드에 있을 경우엔 해당 레코드에서 읽어오고 없는 경우엔 "-" 출력.
 	}
+	char *a_name = NULL;
+	char *string = NULL;
 
-	char *a_name = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1); //배우가 몇 명일지 정확히 알 수 없으므로 최대값 할당.
-	char *string = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1);
-
-	strcpy(string, m_p->actors); //movie 레코드의 actors 통째로 복사
-	a_name = strtok(string, ","); //하나하나 끊음
 	int i = 1; //배우 수를 출력하기 위한 변수
+	if(m_p->actors != NULL){
+		a_name = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1); //배우가 몇 명일지 정확히 알 수 없으므로 최대값 할당.
+		string = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1);
+		strcpy(string, m_p->actors); //movie 레코드의 actors 통째로 복사
+		a_name = strtok(string, ","); //하나하나 끊음
 
 	if(root_a_num == 0){ //배우 레코드에 아무것도 저장되어있지 않을 경우 에러를 피하기 위한 코드
-		printf("A%d : %s(-)\n", i++, a_name);
+	//	printf("A%d : %s(-)\n", i++, a_name);
 	}
 	else{  //actors 링크드 리스트를 읽어 해당 actor가 있는지 검사
 		while(1){
 			if(a_p->next == NULL)
 				break;
+			if(a_p->name == NULL){
+				a_p = a_p ->next;
+				continue;
+			}
 			if(!strcmp(a_name, a_p->name))
 				break;
 			a_p = a_p->next;
 		}
-		printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth); //찾은 경우엔 actor 레코드에서 정보를 읽어오고 없는 경우엔 "-" 출력
+		printf("A%d : %s(%s)", i++, a_name==NULL? "-":a_name, (a_p->next == NULL) ? "-" : a_p->birth); //찾은 경우엔 actor 레코드에서 정보를 읽어오고 없는 경우엔 "-" 출력
 	}
 
-	a_name = strtok(NULL, ",");
-	while(1){ //두번째 actor부터의 반복문(strtok 함수의 두번째 실행부터 형식이 바뀌기 때문에 나누었음)
-		if(a_name == NULL){
-			printf("\n");
-			return;
-		}
-		if(*a_name == ' '){ //배우 이름이 ', '로 입력되었을 경우 strtok로 끊으면 다음 배우의 이름은 첫글자가 공백이므로 공백을 없애주는 코드
-			a_name = a_name+sizeof(char);
-		}
-		a_p = root_actor;
-		while(1){
-			if(a_p->next == NULL)
-				break;
-			if(!strcmp(a_name, a_p->name))
-				break;
-			a_p = a_p->next;
-		}
-		printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
 		a_name = strtok(NULL, ",");
+		while(1){ //두번째 actor부터의 반복문(strtok 함수의 두번째 실행부터 형식이 바뀌기 때문에 나누었음)
+			if(a_name == NULL){
+				printf("\n\n");
+				return;
+			}
+			if(*a_name == ' '){ //배우 이름이 ', '로 입력되었을 경우 strtok로 끊으면 다음 배우의 이름은 첫글자가 공백이므로 공백을 없애주는 코드
+				a_name = a_name+sizeof(char);
+			}
+			a_p = root_actor;
+			while(1){
+				if(a_p->next == NULL)
+					break;
+				if(a_p->name == NULL){
+					a_p = a_p->next;
+					continue;
+				}
+				if(!strcmp(a_name, a_p->name))
+					break;
+				a_p = a_p->next;
+			}
+			printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
+			a_name = strtok(NULL, ",");
+		}
 	}
+	else{
+		printf("A%d : -(-)\n\n", i++);
+		return;
+	}
+
+
 
 }
 void print_d(int sn){ //director 레코드의 print 함수
@@ -1029,6 +1046,10 @@ void print_d(int sn){ //director 레코드의 print 함수
       }
       d_p = d_p->next;
    }
+	 if(d_p->name == NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
 
 	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1); //best_movies에서 한 작품씩 끊어 저장하기 위한 포인터
 	char *string = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1); //best_movies를 통째로 저장하기 위한 포인터
@@ -1044,6 +1065,10 @@ void print_d(int sn){ //director 레코드의 print 함수
 		}
 		if(root_m_num == 0 || m_p->next == NULL){ //movie 레코드에 아무것도 입력되지 않아서 뜨는 에러를 피하기 위한 코드 + 못 찾았을 경우 break
 			break;
+		}
+		if(m_p->title == NULL){
+			m_p = m_p->next;
+			continue;
 		}
 		if(!strcmp(a_best_movie, m_p->title)){ //찾으면 break로 빠져나옴
 			break;
@@ -1063,6 +1088,10 @@ void print_d(int sn){ //director 레코드의 print 함수
 		while(1){
 				if(m_p->next == NULL)
 					break;
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					continue;
+				}
 				if(!strcmp(a_best_movie, m_p->title))
 					break;
 				m_p = m_p->next;
@@ -1091,7 +1120,10 @@ void print_a(int sn){
       }
       a_p = a_p->next;
    }
-
+	 if(a_p->name==NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
 	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
 	char *string = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
 
@@ -1106,6 +1138,10 @@ void print_a(int sn){
 		}
 		if(m_p->next==NULL){ //best movie가 목록에 없을 때
 			break;
+		}
+		if(m_p->title == NULL){
+			m_p = m_p->next;
+			continue;
 		}
 		if(!strcmp(a_best_movie, m_p->title))
 			break;
@@ -1124,6 +1160,10 @@ void print_a(int sn){
 		while(1){
 				if(m_p->next == NULL){
 					break;
+				}
+				if(m_p->title == NULL){
+					m_p = m_p->next;
+					continue;
 				}
 				if(!strcmp(a_best_movie, m_p->title))
 					break;
@@ -1149,8 +1189,11 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
       }
       m_p = m_p->next;
    }
-  fprintf(ofp, "%d, %s, %s\n", m_p->serial_number, m_p->title, m_p->genre);
-	fprintf(ofp, "D : %s", m_p->director);
+	 if(m_p->title==NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
+  fprintf(ofp, "%d, %s, %s\n", m_p->serial_number, m_p->title == NULL ? "-" : m_p->title, m_p->genre == NULL? "-" : m_p->genre);
 	if(root_d_num == 0){
 		fprintf(ofp, "(-)\n");
 	}
@@ -1159,12 +1202,16 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 			if(d_p->next == NULL){
 					break;
 			}
+			if(d_p->name == NULL){
+				d_p=d_p->next;
+				continue;
+			}
 			if(!strcmp(m_p->director, d_p->name)){
 				break;
 			}
    	   d_p = d_p->next;
    	}
-		fprintf(ofp, "(%s)\n", d_p->next==NULL ? "-" : d_p->birth);
+		fprintf(ofp, "D : %s(%s)\n", m_p->director == NULL? "-" : m_p->director, d_p->next==NULL ? "-" : d_p->birth);
 	}
 
 	char *a_name = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1);
@@ -1181,6 +1228,10 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 		while(1){
 			if(a_p->next == NULL)
 				break;
+			if(a_p->name == NULL){
+				a_p = a_p->next;
+				continue;
+			}
 			if(!strcmp(a_name, a_p->name))
 				break;
 			a_p = a_p->next;
@@ -1202,6 +1253,10 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 		while(1){
 			if(a_p->next == NULL)
 				break;
+			if(a_p->name == NULL){
+				a_p = a_p->next;
+				continue;
+			}
 			if(!strcmp(a_name, a_p->name))
 				break;
 			a_p = a_p->next;
@@ -1226,11 +1281,15 @@ void print_d_file(int sn, char *fn){
       }
       d_p = d_p->next;
    }
+	 if (d_p->name==NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
 
 	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1);
 	char *string = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1);
 
-  fprintf(ofp, "%d, %s, %s\n", d_p->serial_number, d_p->name, d_p->sex, d_p->birth);
+  fprintf(ofp, "%d, %s, %s\n", d_p->serial_number, d_p->name==NULL? "-" : d_p->name, d_p->sex==NULL? "-" : d_p->sex, d_p->birth==NULL?"-":d_p->birth);
 	strcpy(string, d_p->best_movies);
 	a_best_movie = strtok(string, ",");
 
@@ -1241,6 +1300,10 @@ void print_d_file(int sn, char *fn){
 		}
 		if(root_m_num == 0 || m_p->next == NULL){
 			break;
+		}
+		if(m_p->title ==NULL){
+			m_p=m_p->next;
+			continue;
 		}
 		if(!strcmp(a_best_movie, m_p->title)){
 			break;
@@ -1261,6 +1324,10 @@ void print_d_file(int sn, char *fn){
 		while(1){
 				if(m_p->next == NULL)
 					break;
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					continue;
+				}
 				if(!strcmp(a_best_movie, m_p->title))
 					break;
 				m_p = m_p->next;
@@ -1285,11 +1352,15 @@ void print_a_file(int sn, char *fn){
       }
       a_p = a_p->next;
    }
+	 if(a_p->name == NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
 
 	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
 	char *string = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
 
-  fprintf(ofp, "%d, %s, %s, %s\n", a_p->serial_number, a_p->name, a_p->sex, a_p->birth);
+  fprintf(ofp, "%d, %s, %s, %s\n", a_p->serial_number, a_p->name==NULL? "-" : a_p->name, a_p->sex==NULL? "-" : a_p->sex, a_p->birth==NULL? "-" : a_p->birth);
 
 	strcpy(string, a_p->best_movies);
 	a_best_movie = strtok(string, ",");
@@ -1300,6 +1371,10 @@ void print_a_file(int sn, char *fn){
 		}
 		if(m_p->next==NULL){ //best movie가 목록에 없을 때
 			break;
+		}
+		if(m_p->title == NULL){
+			m_p=m_p->next;
+			continue;
 		}
 		if(!strcmp(a_best_movie, m_p->title))
 			break;
@@ -1319,6 +1394,10 @@ void print_a_file(int sn, char *fn){
 		while(1){
 				if(m_p->next == NULL){
 					break;
+				}
+				if(m_p->title ==NULL){
+					m_p=m_p->next;
+					continue;
 				}
 				if(!strcmp(a_best_movie, m_p->title))
 					break;
@@ -1844,116 +1923,80 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		else if (!strcmp(factor, "a"))
 			add_actor();
 	}
-<<<<<<< HEAD
-   else if (!strcmp(menu, "print")) {  //print 명령어 처리, 목록에 없는 거 출력해야 할 때 오류남.
-      token = strtok(NULL, cut);
-      factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
-      strcpy(factor, token);
-      printf("factor : %s\n", factor); //factor 확인
-
-      token = strtok(NULL, cut);
-      if(token == NULL){            //serial number 없을 때(나중에 지워야함)
-         if (!strcmp(factor, "m")) {
-				if(root_m_num == 0){
-					printf("no movie.\n\n");
-					return 1;
-				}
-            m = root_movie;
-            while (m->next != NULL) {
-               printf("%s\n", m->title);
-               m = m->next;
-            }
-            printf("\n");
-         }
-         else if (!strcmp(factor, "d")) {
-				if(root_d_num == 0){
-					printf("no director.\n\n");
-					return 1;
-				}
-            d = root_director;
-            while (d->next != NULL) {
-               printf("%s\n", d->name);
-               d = d->next;
-            }
-            printf("\n");
-         }
-         else if (!strcmp(factor, "a")) {
-				if(root_a_num == 0){
-					printf("no actor.\n\n");
-					return 1;
-				}
-            a = root_actor;
-            while (a->next != NULL) {
-               printf("%s\n", a->name);
-               a = a->next;
-            }
-            printf("\n");
-         }
-      }
-      else{ 				//serial number 있을 때
-         get_serial_num = atoi(token); //문자열을 숫자로 변환
-         printf("num : %d\n", get_serial_num);  //get_serial_num 확인
-         if(!strcmp(factor, "m")){
-				if(root_m_num == 0){
-					printf("no movie.\n\n");
-					return 1;
-				}
-            print_m(get_serial_num);
-			}
-         else if(!strcmp(factor, "d")){
-				if(root_d_num == 0){
-					printf("no director.\n\n");
-					return 1;
-				}
-            print_d(get_serial_num);
-			}
-         else if(!strcmp(factor, "a")){
-				if(root_a_num == 0){
-					printf("no actor.\n\n");
-					return 1;
-				}
-            print_a(get_serial_num);
-=======
-	else if (!strcmp(menu, "print")) {	//print 명령어 처리, serial_num 안붙이면 오류뜸
+	else if (!strcmp(menu, "print")) {  //print 명령어 처리, 목록에 없는 거 출력해야 할 때 오류남.
 		token = strtok(NULL, cut);
-		if (token == NULL)	//인자를 입력안하면 걍 넘기기
-			return 1;
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor 확인
+		printf("factor : %s\n", factor); //factor 확인
 
 		token = strtok(NULL, cut);
-		if (token == NULL)	//시리얼 넘버를 입력안하면 걍 넘기기
-			return 1;
-		get_serial_num = atoi(token);	//문자열을 숫자로 변환
-		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
-
-		if (!strcmp(factor, "m")) {	//임시 moive 출력하는 함수
-			m = root_movie;
-			while (m->next != NULL) {
-				printf("%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, m->title, m->genre, m->director, m->year, m->time, m->actors);
-				m = m->next;
+		if(token == NULL){            //serial number 없을 때(나중에 지워야함)
+			 if (!strcmp(factor, "m")) {
+			if(root_m_num == 0){
+				printf("no movie.\n\n");
+				return 1;
 			}
-			printf("\n");
+					m = root_movie;
+					while (m->next != NULL) {
+						printf("%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, m->title, m->genre, m->director, m->year, m->time, m->actors);
+						 m = m->next;
+					}
+					printf("\n");
+			 }
+			 else if (!strcmp(factor, "d")) {
+			if(root_d_num == 0){
+				printf("no director.\n\n");
+				return 1;
+			}
+					d = root_director;
+					while (d->next != NULL) {
+						 printf("add:%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
+						 d = d->next;
+					}
+					printf("\n");
+			 }
+			 else if (!strcmp(factor, "a")) {
+			if(root_a_num == 0){
+				printf("no actor.\n\n");
+				return 1;
+			}
+					a = root_actor;
+					while (1) {
+						if(a->next == NULL)
+							break;
+						 printf("%d:%s\n", a->serial_number, a->name);
+						 a = a->next;
+					}
+					printf("\n");
+			 }
 		}
-		else if (!strcmp(factor, "d")) {	//임시 director 출력하는 함수
-			d = root_director;
-			while (d->next != NULL) {
-				printf("add:%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
-				d = d->next;
+		else{ 				//serial number 있을 때
+			 get_serial_num = atoi(token); //문자열을 숫자로 변환
+			 printf("num : %d\n", get_serial_num);  //get_serial_num 확인
+			 if(!strcmp(factor, "m")){
+			if(root_m_num == 0){
+				printf("no movie.\n\n");
+				return 1;
 			}
-			printf("\n");
+					print_m(get_serial_num);
 		}
-		else if (!strcmp(factor, "a")) {	//임시 actor 출력하는 함수
-			a = root_actor;
-			while (a->next != NULL) {
-				printf("%d:%s:%s:%s:%s\n", a->serial_number, a->name, a->sex, a->birth, a->best_movies);
-				a = a->next;
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
+			 else if(!strcmp(factor, "d")){
+			if(root_d_num == 0){
+				printf("no director.\n\n");
+				return 1;
 			}
-      }
+					print_d(get_serial_num);
+		}
+			 else if(!strcmp(factor, "a")){
+			if(root_a_num == 0){
+				printf("no actor.\n\n");
+				return 1;
+			}
+					print_a(get_serial_num);
+		}
+		}
 
-   }
+		}
 	else if (!strcmp(menu, "delete")) {	//delete 명령어 처리
 		token = strtok(NULL, cut);
 		if (token == NULL)	//인자를 입력안하면 걍 넘기기
@@ -2007,28 +2050,20 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 			strcpy(option, token);
 			printf("option : %s\n", option);	//option 확인
 			token = strtok(NULL, cut);
-<<<<<<< HEAD
-		}
-=======
 			if (token == NULL)	//시리얼 넘버 없으면 걍 넘기기
 				return 1;
-		}		
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
+		}
 		get_serial_num = atoi(token);
 		printf("num : %d\n", get_serial_num);	//get_serial_num 확인
 	}
 	else if (!strcmp(menu, "sort")) {	//sort 명령어 처리
 		token = strtok(NULL, cut);
-		if (token == NULL)	//인자 없으면 걍 넘기기
-			return 1;
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(factor, token);
 		printf("factor : %s\n", factor);	//factor 확인
 		if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인
 			if (!strcmp(token, "-f")) {	//뒤에 있는게 -f이면
 				token = strtok(NULL, cut);	//-f 건너뛰기
-				if (token == NULL)	//잘못 입력하면 걍 넘기기
-					return 1;
 				file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 				strcpy(file_name, token);
 				printf("file_name : %s\n", file_name);	//file_name 확인
@@ -2041,8 +2076,6 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 
 				if ((token = strtok(NULL, cut)) != NULL) {	//뒤에 뭐가 더 있는지 확인
 					token = strtok(NULL, cut);	//있다면 -f일테니 건너뛰기
-					if (token == NULL)	//파일이름을 입력안하면 걍 넘기기
-						return 1;
 					file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 					strcpy(file_name, token);
 					printf("file_name : %s\n", file_name);	//file_name 확인
@@ -2093,11 +2126,6 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 		printf("\n");
 	}
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
 	if (!strcmp(input, "save m")) {	//임시 movie 세이브
 		save_movie();
 	}
@@ -2107,8 +2135,11 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 	else if (!strcmp(input, "save a")) {	//임시 actor 세이브
 		save_actor();
 	}
+
 	return 1;
 }
+
+
 
 int main(void) {
 	m = (movie *)malloc(sizeof(movie));	//movie *m 전역 구조체 동적할당
@@ -2116,24 +2147,16 @@ int main(void) {
 	a = (actor *)malloc(sizeof(actor));	//actor *a 전역 구조체 동적할당
 	int quit_num = 1;	//프로그램 끝내는 변수
 	char *input_words;
-<<<<<<< HEAD
 	input_words = (char *)malloc(sizeof(char) * 50);
-
-	printf(">> Welcome to My Movie <<\n");
-	printf("File Loading.....\n");
-	printf("You can use add, update, delete, search, sort, save, end commands.\n");
-=======
-	input_words = (char *)malloc(sizeof(char) * 50);	
 
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
 	load_movie();
 	load_director();
 	load_actor();
-	printf("You can use add, update, delete, search, sort, save, end commands.\n");	
->>>>>>> 9c5fd046fdc9be3f149764cef72832273553967d
+	printf("You can use add, update, delete, search, sort, save, end commands.\n");
 	signal(SIGINT, handler);	//Ctrl + c를 눌렀을때 바로 종료되지 않고 물어보기
-	
+
 	while (quit_num) {
 		printf("(movie) ");
 		gets(input_words);
