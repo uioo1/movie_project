@@ -992,7 +992,7 @@ void print_m(int sn){ //movie print 함수
 				a_p = a_p ->next;
 				continue;
 			}
-			if(!strcmp(a_name, a_p->name))
+			if(!strncmp(a_name, a_p->name, strlen(a_name)-1))
 				break;
 			a_p = a_p->next;
 		}
@@ -1016,7 +1016,7 @@ void print_m(int sn){ //movie print 함수
 					a_p = a_p->next;
 					continue;
 				}
-				if(!strcmp(a_name, a_p->name))
+				if(!strncmp(a_name, a_p->name,strlen(a_name)-1))
 					break;
 				a_p = a_p->next;
 			}
@@ -1054,7 +1054,7 @@ void print_d(int sn){ //director 레코드의 print 함수
 	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1); //best_movies에서 한 작품씩 끊어 저장하기 위한 포인터
 	char *string = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1); //best_movies를 통째로 저장하기 위한 포인터
 
-  printf("%d, %s, %s\n", d_p->serial_number, d_p->name, d_p->sex, d_p->birth); //director의 정보 출력
+  printf("%d, %s, %s, %s\n", d_p->serial_number, d_p->name, d_p->sex, d_p->birth); //director의 정보 출력
 	strcpy(string, d_p->best_movies);
 	a_best_movie = strtok(string, ",");
 
@@ -1070,12 +1070,13 @@ void print_d(int sn){ //director 레코드의 print 함수
 			m_p = m_p->next;
 			continue;
 		}
-		if(!strcmp(a_best_movie, m_p->title)){ //찾으면 break로 빠져나옴
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1)){ //찾으면 break로 빠져나옴
 			break;
 		}
 		m_p = m_p->next;
 	}
-	printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+	printf("%s\n", a_best_movie);
+	printf("\t%s\t, \t%s\t, \t%s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
 	a_best_movie = strtok(NULL, ",");
 	while(1){		//두번째 best_movies부터의 반복문
 		if(a_best_movie == NULL){
@@ -1092,7 +1093,7 @@ void print_d(int sn){ //director 레코드의 print 함수
 					m_p=m_p->next;
 					continue;
 				}
-				if(!strcmp(a_best_movie, m_p->title))
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
 					break;
 				m_p = m_p->next;
 		}
@@ -1143,7 +1144,7 @@ void print_a(int sn){
 			m_p = m_p->next;
 			continue;
 		}
-		if(!strcmp(a_best_movie, m_p->title))
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
 			break;
 		m_p = m_p->next;
 	}
@@ -1165,7 +1166,7 @@ void print_a(int sn){
 					m_p = m_p->next;
 					continue;
 				}
-				if(!strcmp(a_best_movie, m_p->title))
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
 					break;
 				m_p = m_p->next;
 			}
@@ -1232,7 +1233,7 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 				a_p = a_p->next;
 				continue;
 			}
-			if(!strcmp(a_name, a_p->name))
+			if(!strncmp(a_name, a_p->name, strlen(a_name)-1))
 				break;
 			a_p = a_p->next;
 		}
@@ -1257,13 +1258,14 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 				a_p = a_p->next;
 				continue;
 			}
-			if(!strcmp(a_name, a_p->name))
+			if(!strncmp(a_name, a_p->name, strlen(a_name)-1))
 				break;
 			a_p = a_p->next;
 		}
 		fprintf(ofp, "A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
 		a_name = strtok(NULL, ",");
 	}
+
 }
 
 void print_d_file(int sn, char *fn){
@@ -1289,7 +1291,7 @@ void print_d_file(int sn, char *fn){
 	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1);
 	char *string = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1);
 
-  fprintf(ofp, "%d, %s, %s\n", d_p->serial_number, d_p->name==NULL? "-" : d_p->name, d_p->sex==NULL? "-" : d_p->sex, d_p->birth==NULL?"-":d_p->birth);
+  fprintf(ofp, "%d, %s, %s, %s\n", d_p->serial_number, d_p->name==NULL? "-" : d_p->name, d_p->sex==NULL? "-" : d_p->sex, d_p->birth==NULL?"-":d_p->birth);
 	strcpy(string, d_p->best_movies);
 	a_best_movie = strtok(string, ",");
 
@@ -1305,7 +1307,7 @@ void print_d_file(int sn, char *fn){
 			m_p=m_p->next;
 			continue;
 		}
-		if(!strcmp(a_best_movie, m_p->title)){
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1)){
 			break;
 		}
 		m_p = m_p->next;
@@ -1328,7 +1330,7 @@ void print_d_file(int sn, char *fn){
 					m_p=m_p->next;
 					continue;
 				}
-				if(!strcmp(a_best_movie, m_p->title))
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
 					break;
 				m_p = m_p->next;
 		}
@@ -1376,7 +1378,7 @@ void print_a_file(int sn, char *fn){
 			m_p=m_p->next;
 			continue;
 		}
-		if(!strcmp(a_best_movie, m_p->title))
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
 			break;
 		m_p = m_p->next;
 	}
@@ -1399,7 +1401,7 @@ void print_a_file(int sn, char *fn){
 					m_p=m_p->next;
 					continue;
 				}
-				if(!strcmp(a_best_movie, m_p->title))
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
 					break;
 				m_p = m_p->next;
 			}
@@ -1414,6 +1416,7 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		FILE *fp = fopen(file_name, "w");
 		fclose(fp);
 	}
+
 	if(!strcmp(factor, "m")){ // factor == m
 		movie *m_p; //링크드리스트 포인터
 		sorting *m_string; //movie의 구조체 멤버들을 넣기 위한 구조체
@@ -1435,20 +1438,29 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		if(!strcmp(option, "NULL") || !strcmp(option, "t")){ //option == NULL or t일 때 (출력 동일)
 			m_p = root_movie;
 			for(int i=0; i<total; i++){ //movie 레코드의 title을 모두 임시 구조체로 옮겨옴
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->title)+1);
 				strcpy((*(m_string+i)).string, m_p->title);
 				(*(m_string+i)).serial_number = m_p->serial_number;
 				m_p=m_p->next;
-			}
+
+		}
 			for(int i=total-1; i>0; i--){ //버블정렬
 				for(int j=0; j<i; j++){
 					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
 						m_tmp = *(m_string+j);
 						*(m_string+j) = *(m_string+j+1);
-						*(m_string+j+1) = m_tmp;
+					*(m_string+j+1) = m_tmp;
 					}
 				}
+
 			}
+
 			if(!strcmp(file_name, "NULL")){ //화면 출력일 때
 				for(int i=0; i<total; i++){
 					print_m((*(m_string+i)).serial_number);
@@ -1463,6 +1475,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		else if(!strcmp(option, "g")){ //factor == m, option == g
 			m_p = root_movie;
 			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->genre)+1);
 				strcpy((*(m_string+i)).string, m_p->genre);
 				(*(m_string+i)).serial_number = m_p->serial_number;
@@ -1491,6 +1509,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		else if(!strcmp(option, "d")){ //factor == m, option == d
 			m_p = root_movie;
 			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->director)+1);
 				strcpy((*(m_string+i)).string, m_p->director);
 				(*(m_string+i)).serial_number = m_p->serial_number;
@@ -1521,6 +1545,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			m_p = root_movie;
 			m_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
 			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(m_num+i)).num = atoi(m_p->year);
 				(*(m_num+i)).serial_number = m_p->serial_number;
 				m_p=m_p->next;
@@ -1549,6 +1579,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			m_p = root_movie;
 			m_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
 			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(m_num+i)).num = atoi(m_p->time);
 				(*(m_num+i)).serial_number = m_p->serial_number;
 				m_p=m_p->next;
@@ -1579,6 +1615,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			char *token;
 			char *st; //임시로 actors를 통째로 담을 포인터
 			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				st = (char *)malloc(sizeof(char)+strlen(m_p->actors)+1);
 				strcpy(st, m_p->actors);
 				token = strtok(st, ","); //token으로 첫번째 배우만 잘라냄.
@@ -1628,6 +1670,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		if(!strcmp(option, "NULL") || !strcmp(option, "n")){ //option ==NULL or n
 			d_p = root_director;
 			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(d_p->name)+1);
 				strcpy((*(d_string+i)).string, d_p->name);
 				(*(d_string+i)).serial_number = d_p->serial_number;
@@ -1656,6 +1704,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		else if(!strcmp(option, "s")){ //option ==s
 			d_p = root_director;
 			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(d_p->sex)+1);
 				strcpy((*(d_string+i)).string, d_p->sex);
 				(*(d_string+i)).serial_number = d_p->serial_number;
@@ -1685,6 +1739,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			d_p = root_director;
 			d_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
 			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(d_num+i)).num = atoi(d_p->birth);
 				(*(d_num+i)).serial_number = d_p->serial_number;
 				d_p=d_p->next;
@@ -1714,6 +1774,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			char *token;
 			char *st; //임시로 best_movies를 통째로 담을 포인터
 			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				st = (char *)malloc(sizeof(char)+strlen(d_p->best_movies)+1);
 				strcpy(st, d_p->best_movies);
 				token = strtok(st, ",");
@@ -1763,6 +1829,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		if(!strcmp(option, "NULL") || !strcmp(option, "n")){ //option ==NULL or n
 			a_p = root_actor;
 			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(a_p->name)+1);
 				strcpy((*(a_string+i)).string, a_p->name);
 				(*(a_string+i)).serial_number = a_p->serial_number;
@@ -1791,6 +1863,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 		if(!strcmp(option, "s")){ //option ==s
 			a_p = root_actor;
 			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(a_p->sex)+1);
 				strcpy((*(a_string+i)).string, a_p->sex);
 				(*(a_string+i)).serial_number = a_p->serial_number;
@@ -1820,6 +1898,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			a_p = root_actor;
 			a_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
 			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				(*(a_num+i)).num = atoi(a_p->birth);
 				(*(a_num+i)).serial_number = a_p->serial_number;
 				a_p=a_p->next;
@@ -1849,6 +1933,12 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			char *token;
 			char *st; //임시로 best_movies를 통째로 담을 포인터
 			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
 				st = (char *)malloc(sizeof(char)+strlen(a_p->best_movies)+1);
 				strcpy(st, a_p->best_movies);
 				token = strtok(st, ",");
@@ -1878,6 +1968,7 @@ void sort(char *factor, char *option, char *file_name){//구조체 크기 64
 			}
 		}
 	}
+
 }
 
 int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에 같은 형식으로 추가하세용
