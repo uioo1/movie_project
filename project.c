@@ -996,13 +996,14 @@ void print_m(int sn){ //movie print 함수
 				break;
 			a_p = a_p->next;
 		}
-		printf("A%d : %s(%s)", i++, a_name==NULL? "-":a_name, (a_p->next == NULL) ? "-" : a_p->birth); //찾은 경우엔 actor 레코드에서 정보를 읽어오고 없는 경우엔 "-" 출력
+		*(a_name + strlen(a_name) - 1) = 0;
+		printf("A%d : %s(%s)\n", i++, a_name==NULL? "-": a_name, (a_p->next == NULL) ? "-" : a_p->birth); //찾은 경우엔 actor 레코드에서 정보를 읽어오고 없는 경우엔 "-" 출력
 	}
 
 		a_name = strtok(NULL, ",");
 		while(1){ //두번째 actor부터의 반복문(strtok 함수의 두번째 실행부터 형식이 바뀌기 때문에 나누었음)
 			if(a_name == NULL){
-				printf("\n\n");
+				printf("\n");
 				return;
 			}
 			if(*a_name == ' '){ //배우 이름이 ', '로 입력되었을 경우 strtok로 끊으면 다음 배우의 이름은 첫글자가 공백이므로 공백을 없애주는 코드
@@ -1020,6 +1021,7 @@ void print_m(int sn){ //movie print 함수
 					break;
 				a_p = a_p->next;
 			}
+			*(a_name + strlen(a_name) - 1) = 0;
 			printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
 			a_name = strtok(NULL, ",");
 		}
@@ -1075,8 +1077,9 @@ void print_d(int sn){ //director 레코드의 print 함수
 		}
 		m_p = m_p->next;
 	}
-	printf("%s\n", a_best_movie);
-	printf("\t%s\t, \t%s\t, \t%s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+	*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+
+	printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
 	a_best_movie = strtok(NULL, ",");
 	while(1){		//두번째 best_movies부터의 반복문
 		if(a_best_movie == NULL){
@@ -1097,6 +1100,7 @@ void print_d(int sn){ //director 레코드의 print 함수
 					break;
 				m_p = m_p->next;
 		}
+		*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 		printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL? "-" : m_p->year, m_p->next==NULL? "-" : m_p->time);
 		a_best_movie = strtok(NULL, ",");
 	}
@@ -1148,6 +1152,7 @@ void print_a(int sn){
 			break;
 		m_p = m_p->next;
 	}
+	*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 	printf("%s, %s, %s\n", a_best_movie, m_p->next == NULL ? "-" : m_p->year, m_p->next == NULL ? "-" : m_p->time);
 	a_best_movie = strtok(NULL, ",");
 	while(1){	//두번째 대표작부터의 반복문
@@ -1170,6 +1175,7 @@ void print_a(int sn){
 					break;
 				m_p = m_p->next;
 			}
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 		printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
 		a_best_movie = strtok(NULL, ",");
 	}
@@ -1237,6 +1243,7 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 				break;
 			a_p = a_p->next;
 		}
+		*(a_name + strlen(a_name) - 1) = 0;
 		fprintf(ofp, "A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
 	}
 
@@ -1262,6 +1269,8 @@ void print_m_file(int sn, char *fn){ //sort를 위한 file 출력 함수(print�
 				break;
 			a_p = a_p->next;
 		}
+
+		*(a_name + strlen(a_name) - 1) = 0;
 		fprintf(ofp, "A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
 		a_name = strtok(NULL, ",");
 	}
@@ -1312,6 +1321,8 @@ void print_d_file(int sn, char *fn){
 		}
 		m_p = m_p->next;
 	}
+
+	*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 	fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
 	a_best_movie = strtok(NULL, ",");
 	while(1){		//두번째 대표작부터의 반복문
@@ -1334,6 +1345,7 @@ void print_d_file(int sn, char *fn){
 					break;
 				m_p = m_p->next;
 		}
+		*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 		fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next==NULL? "-" : m_p->year, m_p->next==NULL? "-" : m_p->time);
 		a_best_movie = strtok(NULL, ",");
 	}
@@ -1382,6 +1394,7 @@ void print_a_file(int sn, char *fn){
 			break;
 		m_p = m_p->next;
 	}
+	*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 	fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next == NULL ? "-" : m_p->year, m_p->next == NULL ? "-" : m_p->time);
 	a_best_movie = strtok(NULL, ",");
 	while(1){	//두번째 대표작부터의 반복문
@@ -1405,6 +1418,7 @@ void print_a_file(int sn, char *fn){
 					break;
 				m_p = m_p->next;
 			}
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
 		fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
 		a_best_movie = strtok(NULL, ",");
 	}
