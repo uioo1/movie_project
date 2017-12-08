@@ -2934,6 +2934,7 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 				return 1;
 			}
 					print_m(get_serial_num);
+<<<<<<< HEAD
 		}
 			 else if(!strcmp(factor, "d")){
 			if(root_d_num == 0){
@@ -2947,6 +2948,21 @@ int menu_func(char *input) {	//명령어 입력한거 실행하는거, 추후에
 				printf("no actor.\n\n");
 				return 1;
 			}
+=======
+		}
+			 else if(!strcmp(factor, "d")){
+			if(root_d_num == 0){
+				printf("no director.\n\n");
+				return 1;
+			}
+					print_d(get_serial_num);
+		}
+			 else if(!strcmp(factor, "a")){
+			if(root_a_num == 0){
+				printf("no actor.\n\n");
+				return 1;
+			}
+>>>>>>> sebin/master
 					print_a(get_serial_num);
 		}
 		}
