@@ -1,9 +1,19 @@
-ï»¿#include <signal.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
 #include <time.h>
+
+typedef struct sorting { //charÇü sort¸¦ À§ÇÑ ÀÓ½Ã±¸Á¶Ã¼
+	int serial_number;
+	char *string;
+} sorting;
+
+typedef struct sorting_num{ //intÇü sort¸¦ À§ÇÑ ÀÓ½Ã±¸Á¶Ã¼
+	int serial_number;
+	int num;
+} sorting_num;
 
 typedef struct movie {
 	int serial_number;
@@ -13,6 +23,8 @@ typedef struct movie {
 	char *year;
 	char *time;
 	char *actors;
+	struct director *d_link;
+	struct actor *a_link;
 	struct movie *next;
 }movie;
 
@@ -22,6 +34,7 @@ typedef struct director {
 	char *sex;
 	char *birth;
 	char *best_movies;
+	struct movie *m_link;
 	struct director *next;
 }director;
 
@@ -31,20 +44,21 @@ typedef struct actor {
 	char *sex;
 	char *birth;
 	char *best_movies;
+	struct movie *m_link;
 	struct actor *next;
 }actor;
 
-movie *root_movie, *m;	//movie*ì˜ í—¤ë”ì™€ ë‹¤ë¥¸ê±°
-director *root_director, *d;	//director*ì˜ í—¤ë”ì™€ ë‹¤ë¥¸ê±°
-actor *root_actor, *a;	//actor*ì˜ í—¤ë”ì™€ ë‹¤ë¥¸ê±°
-int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//í—¤ë”ì¸ì§€ ì•„ë‹Œì§€ íŒë³„í•  ë³€ìˆ˜
-int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//ê°ê°ì˜ ì‹œë¦¬ì–¼ ë„˜ë²„ ì „ì—­ë³€ìˆ˜
-int ctrl_c_num = 0;	//ctrl+c ë°›ì•˜ì„ë•Œ ì•ì˜ ê±°ë¥¼ ë‹¤ì‹œ ì¶œë ¥í•˜ê²Œ í•´ì£¼ëŠ” ì „ì—­ë³€ìˆ˜(ì•„ì§ ì‚¬ìš©ì•ˆë¨)
+movie *root_movie = NULL, *m;	//movie*ÀÇ Çì´õ¿Í ´Ù¸¥°Å
+director *root_director = NULL, *d;	//director*ÀÇ Çì´õ¿Í ´Ù¸¥°Å
+actor *root_actor = NULL, *a;	//actor*ÀÇ Çì´õ¿Í ´Ù¸¥°Å
+int root_m_num = 0, root_d_num = 0, root_a_num = 0;	//Çì´õÀÎÁö ¾Æ´ÑÁö ÆÇº°ÇÒ º¯¼ö
+int serial_m_num = 1, serial_d_num = 1, serial_a_num = 1;	//°¢°¢ÀÇ ½Ã¸®¾ó ³Ñ¹ö Àü¿ªº¯¼ö
+int ctrl_c_num = 0;	//ctrl+c ¹Ş¾ÒÀ»¶§ ¾ÕÀÇ °Å¸¦ ´Ù½Ã Ãâ·ÂÇÏ°Ô ÇØÁÖ´Â Àü¿ªº¯¼ö(¾ÆÁ÷ »ç¿ë¾ÈµÊ)
 
-char *colon_proc(char *);	//ì½œë¡  ì²˜ë¦¬ í•¨ìˆ˜ ì„ ì–¸
-char *anti_colon_proc(char *);	//??;ì²˜ë¦¬ í•¨ìˆ˜ ì„ ì–¸
-char *itoa(int value, char *str, int radix);	//itoaí•¨ìˆ˜ì˜ í—¤ë” ì„ ì–¸
-char *mystrcat(char *, char *);	//strcatì˜ ì„±ëŠ¥ì´ í–¥ìƒëœ mystrcat í•¨ìˆ˜ í—¤ë” ì„ ì–¸
+char *colon_proc(char *);	//Äİ·Ğ Ã³¸® ÇÔ¼ö ¼±¾ğ
+char *anti_colon_proc(char *);	//??;Ã³¸® ÇÔ¼ö ¼±¾ğ
+char *itoa(int value, char *str, int radix);	//itoaÇÔ¼öÀÇ Çì´õ ¼±¾ğ
+char *mystrcat(char *, char *);	//strcatÀÇ ¼º´ÉÀÌ Çâ»óµÈ mystrcat ÇÔ¼ö Çì´õ ¼±¾ğ
 
 char *mystrcat(char *dest, char *src) {
 	while (*dest) dest++;
@@ -52,14 +66,14 @@ char *mystrcat(char *dest, char *src) {
 	return --dest;
 }
 
-void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ ë†“ëŠ” í•¨ìˆ˜(ë¯¸ì™„ì„±)
-	char *token, *line, *menu;	//í† í°ê³¼ í•œì¤„ì„ ì €ì¥í•˜ëŠ” ê²ƒê³¼ ë©”ë‰´(add, delete, update)ë¥¼ ì €ì¥í•  í¬ì¸í„°
-	char *title, *genre, *director, *year, *m_time, *actors;	//movieì— ë„£ì„ ìª¼ê°œë†“ì€ ë©¤ë²„ë“¤ ì €ì¥í•  í¬ì¸í„°
-	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//ì‹œê°„ë“¤ì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•´ì„œ ì €ì¥í•  í¬ì¸í„°ì™€ ë‹¤ í•©ì¹  ë¶€ë¶„
+void load_movie() {	//movie_log¸¦ ÀĞ¾î¼­ m ¸µÅ©µå ¸®½ºÆ®¸¦ ¸¸µé¾î ³õ´Â ÇÔ¼ö(¹Ì¿Ï¼º)
+	char *token, *line, *menu;	//ÅäÅ«°ú ÇÑÁÙÀ» ÀúÀåÇÏ´Â °Í°ú ¸Ş´º(add, delete, update)¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ
+	char *title, *genre, *director, *year, *m_time, *actors;	//movie¿¡ ³ÖÀ» ÂÉ°³³õÀº ¸â¹öµé ÀúÀåÇÒ Æ÷ÀÎÅÍ
+	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//½Ã°£µéÀ» ¹®ÀÚ¿­·Î º¯È¯ÇØ¼­ ÀúÀåÇÒ Æ÷ÀÎÅÍ¿Í ´Ù ÇÕÄ¥ ºÎºĞ
 	int serial_num;
 	char ch;
 	movie *m_load, *m_temp;
-	time_t t = time(NULL);	//íƒ€ì„ êµ¬ì¡°ì²´ ì„ ì–¸
+	time_t t = time(NULL);	//Å¸ÀÓ ±¸Á¶Ã¼ ¼±¾ğ
 	struct tm tm = *localtime(&t);
 	m_load = (movie *)malloc(sizeof(movie));
 
@@ -86,13 +100,13 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 	token = (char *)malloc(sizeof(char) * 50);
 	line = (char *)malloc(sizeof(char) * 200);
 
-	FILE *fp, *fp_copy;	//movie_logë¥¼ ìœ„í•œê²ƒê³¼ movie_listë¥¼ ì‹œê°„ë¶™ì—¬ì„œ ì €ì¥í•  íŒŒì¼ í¬ì¸í„°
+	FILE *fp, *fp_copy;	//movie_log¸¦ À§ÇÑ°Í°ú movie_list¸¦ ½Ã°£ºÙ¿©¼­ ÀúÀåÇÒ ÆÄÀÏ Æ÷ÀÎÅÍ
 	fp = fopen("movie_log", "r");
 	if (fp == NULL)
 		return;
 
-	while (fgets(line, 200, fp) != NULL) {	//logíŒŒì¼ì„ ì¤„ì´ ì—†ì„ ë•Œê¹Œì§€ ì½ìŒ
-		*(line + strlen(line) - 1) = 0;	//ë§ˆì§€ë§‰ì— ì½ì–´ì˜¨ \nì„ ì—†ì• ì¤Œ
+	while (fgets(line, 200, fp) != NULL) {	//logÆÄÀÏÀ» ÁÙÀÌ ¾øÀ» ¶§±îÁö ÀĞÀ½
+		*(line + strlen(line) - 1) = 0;	//¸¶Áö¸·¿¡ ÀĞ¾î¿Â \nÀ» ¾ø¾ÖÁÜ
 		printf("%s\n", line);
 
 		token = strtok(line, ":");
@@ -102,15 +116,15 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 
 		token = strtok(NULL, ":");
 		printf("serial_num : %s\n", token);
-		serial_num = atoi(token);	//ë¬¸ìì—´ì¸ tokenì„ ì •ìˆ˜ë¡œ ë³€í™˜
+		serial_num = atoi(token);	//¹®ÀÚ¿­ÀÎ tokenÀ» Á¤¼ö·Î º¯È¯
 
 		if(!strcmp(menu, "add"))
-			serial_m_num = serial_num + 1;	//ë‚˜ì¤‘ì— add mì„ í•  ë•Œ ì˜¬ë°”ë¥¸ ì‹œë¦¬ì–¼ ë„˜ë²„ë¥¼ ê°–ê²Œí•¨
+			serial_m_num = serial_num + 1;	//³ªÁß¿¡ add mÀ» ÇÒ ¶§ ¿Ã¹Ù¸¥ ½Ã¸®¾ó ³Ñ¹ö¸¦ °®°ÔÇÔ
 
 
 		if (strcmp(menu, "delete")) {
 			token = strtok(NULL, ":");
-			token = anti_colon_proc(token);	//??;ë¥¼ :ë¡œ ë°”ê¿”ì¤Œ
+			token = anti_colon_proc(token);	//??;¸¦ :·Î ¹Ù²ãÁÜ
 			printf("title : %s\n", token);
 			title = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(title, token);
@@ -136,23 +150,23 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 			token = strtok(NULL, ":");
 			token = anti_colon_proc(token);
 			printf("time : %s\n", token);
-			m_time = (char *)malloc(sizeof(char) * strlen(token) + 1);	
+			m_time = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(m_time, token);
 
 			token = strtok(NULL, ":");
 			token = anti_colon_proc(token);
-			if (*token == '=') {
+			/*if (*token == '=') {
 				//printf("= is comparamised\n");
-				*(token + strlen(token) - 1) = 0;	//ë§ˆì§€ë§‰ì— ì½ì–´ì˜¨ í¼ í”¼ë“œ(form feed?)ë¥¼ ì—†ì• ì¤Œ
-			}
+				*(token + strlen(token) - 1) = 0;	//¸¶Áö¸·¿¡ ÀĞ¾î¿Â Æû ÇÇµå(form feed?)¸¦ ¾ø¾ÖÁÜ
+			}*/
 			printf("actors : %s\n", token);
 			actors = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(actors, token);
 		}
 
 
-		if (!strcmp(menu, "add")) {	//tagê°€ addì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
-			if (root_m_num == 0) {	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ì²˜ìŒ í—¤ë”ë¥¼ ì €ì¥ 
+		if (!strcmp(menu, "add")) {	//tag°¡ addÀÌ¸é ½ÇÇàÇÏ´Â °Í
+			if (root_m_num == 0) {	//¸µÅ©µå ¸®½ºÆ®ÀÇ Ã³À½ Çì´õ¸¦ ÀúÀå
 				root_movie = m_load;
 				root_m_num = 1;
 			}
@@ -170,25 +184,25 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 			m_load->actors = (char *)malloc(sizeof(char) * strlen(actors) + 1);
 			strcpy(m_load->actors, actors);
 
-			m_load->next = (movie *)malloc(sizeof(movie));	//m_loadì˜ nextí¬ì¸í„°ë¥¼ ë™ì í• ë‹¹
-			m_load = m_load->next;	//m_loadì„ í˜„ì¬ m_loadì˜ nextë¡œ ë°”ê¿ˆ
-			m_temp = m_load;	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ë§ˆì§€ë§‰ì„ m_tempì—ë‹¤ê°€ ì €ì¥
-			m_load->next = NULL;	//ì§€ê¸ˆì˜ m_loadì˜ nextë¥¼ nullë¡œ í•´ì¤Œ
+			m_load->next = (movie *)malloc(sizeof(movie));	//m_loadÀÇ nextÆ÷ÀÎÅÍ¸¦ µ¿ÀûÇÒ´ç
+			m_load = m_load->next;	//m_loadÀ» ÇöÀç m_loadÀÇ next·Î ¹Ù²Ş
+			m_temp = m_load;	//¸µÅ©µå ¸®½ºÆ®ÀÇ ¸¶Áö¸·À» m_temp¿¡´Ù°¡ ÀúÀå
+			m_load->next = NULL;	//Áö±İÀÇ m_loadÀÇ next¸¦ null·Î ÇØÁÜ
 		}
-		else if (!strcmp(menu, "update")) {	//tagê°€ updateì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
+		else if (!strcmp(menu, "update")) {	//tag°¡ updateÀÌ¸é ½ÇÇàÇÏ´Â °Í
 			m_load = root_movie;
 			while (1) {
-				if (m_load->serial_number == serial_num) {	//updateí•˜ê³ ì í•˜ëŠ” ì‹œë¦¬ì–¼ ë„˜ë²„ì™€ ì¼ì¹˜í•˜ë©´ ì‹¤í–‰
+				if (m_load->serial_number == serial_num) {	//updateÇÏ°íÀÚ ÇÏ´Â ½Ã¸®¾ó ³Ñ¹ö¿Í ÀÏÄ¡ÇÏ¸é ½ÇÇà
 					if (strcmp(title, "="))
-						strcpy(m_load->title, title);				
+						strcpy(m_load->title, title);
 					if (strcmp(genre, "="))
-						strcpy(m_load->genre, genre);					
+						strcpy(m_load->genre, genre);
 					if (strcmp(director, "="))
-						strcpy(m_load->director, director );					
+						strcpy(m_load->director, director );
 					if (strcmp(year, "="))
-						strcpy(m_load->year, year);					
+						strcpy(m_load->year, year);
 					if (strcmp(m_time, "="))
-						strcpy(m_load->time, m_time);					
+						strcpy(m_load->time, m_time);
 					if (strcmp(actors, "="))
 						strcpy(m_load->actors, actors);
 
@@ -200,10 +214,10 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 			}
 			m_load = m_temp;
 		}
-		else if (!strcmp(menu, "delete")) {	//tagê°€ deleteì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
+		else if (!strcmp(menu, "delete")) {	//tag°¡ deleteÀÌ¸é ½ÇÇàÇÏ´Â °Í
 			m_load = root_movie;
 			while (1) {
-				if (m_load->serial_number == serial_num) {	//deleteí•˜ê³ ì í•˜ëŠ” ì‹œë¦¬ì–¼ ë„˜ë²„ì™€ ì¼ì¹˜í•˜ë©´ ì‹¤í–‰
+				if (m_load->serial_number == serial_num) {	//deleteÇÏ°íÀÚ ÇÏ´Â ½Ã¸®¾ó ³Ñ¹ö¿Í ÀÏÄ¡ÇÏ¸é ½ÇÇà
 					m_load->title = NULL;
 					m_load->genre = NULL;
 					m_load->director = NULL;
@@ -222,8 +236,8 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 		printf("\n");
 	}
 	m = m_load;
-	
-	strcat(cp_file_name, nt_mon);	//movie_listíŒŒì¼ì„ ìƒˆë¡œ ì €ì¥í•  ë•Œ í™•ì¥ìë¥¼ ë‚ ì§œë¡œ í•˜ê²Œ í•˜ëŠ” ë¶€ë¶„
+
+	strcat(cp_file_name, nt_mon);	//movie_listÆÄÀÏÀ» »õ·Î ÀúÀåÇÒ ¶§ È®ÀåÀÚ¸¦ ³¯Â¥·Î ÇÏ°Ô ÇÏ´Â ºÎºĞ
 	if (atoi(nt_mday) < 10) {
 		mystrcat(cp_file_name, "0");
 		mystrcat(cp_file_name, nt_mday);
@@ -253,23 +267,23 @@ void load_movie() {	//movie_logë¥¼ ì½ì–´ì„œ m ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 	printf("full_file_name : %s\n", full_file_name);
 
 	fp_copy = fopen(full_file_name, "wt");
-	rewind(fp);	//movie_listì˜ ë§¨ ì•ìœ¼ë¡œ íŒŒì¼ í¬ì¸í„°ë¥¼ ì˜®ê¹€
+	rewind(fp);	//movie_listÀÇ ¸Ç ¾ÕÀ¸·Î ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ¿Å±è
 	while ((ch = fgetc(fp)) != EOF)
 		fputc(ch, fp_copy);
-	
+
 	fclose(fp);
 	fclose(fp_copy);
 	printf("\n");
 }
 
-void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ ë†“ëŠ” í•¨ìˆ˜
-	char *token, *line, *menu;	//í† í°ê³¼ í•œì¤„ì„ ì €ì¥í•˜ëŠ” ê²ƒê³¼ ë©”ë‰´(add, delete, update)ë¥¼ ì €ì¥í•  í¬ì¸í„°
-	char *name, *sex, *birth, *best_movies;	//directorì— ë„£ì„ ìª¼ê°œë†“ì€ ë©¤ë²„ë“¤ ì €ì¥í•  í¬ì¸í„°
-	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//ì‹œê°„ë“¤ì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•´ì„œ ì €ì¥í•  í¬ì¸í„°ì™€ ë‹¤ í•©ì¹  ë¶€ë¶„
+void load_director() {	//director_log¸¦ ÀĞ¾î¼­ d ¸µÅ©µå ¸®½ºÆ®¸¦ ¸¸µé¾î ³õ´Â ÇÔ¼ö
+	char *token, *line, *menu;	//ÅäÅ«°ú ÇÑÁÙÀ» ÀúÀåÇÏ´Â °Í°ú ¸Ş´º(add, delete, update)¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ
+	char *name, *sex, *birth, *best_movies;	//director¿¡ ³ÖÀ» ÂÉ°³³õÀº ¸â¹öµé ÀúÀåÇÒ Æ÷ÀÎÅÍ
+	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//½Ã°£µéÀ» ¹®ÀÚ¿­·Î º¯È¯ÇØ¼­ ÀúÀåÇÒ Æ÷ÀÎÅÍ¿Í ´Ù ÇÕÄ¥ ºÎºĞ
 	int serial_num;
 	char ch;
 	director *d_load, *d_temp;
-	time_t t = time(NULL);	//íƒ€ì„ êµ¬ì¡°ì²´ ì„ ì–¸
+	time_t t = time(NULL);	//Å¸ÀÓ ±¸Á¶Ã¼ ¼±¾ğ
 	struct tm tm = *localtime(&t);
 	d_load = (director *)malloc(sizeof(director));
 
@@ -296,13 +310,13 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 	token = (char *)malloc(sizeof(char) * 50);
 	line = (char *)malloc(sizeof(char) * 200);
 
-	FILE *fp, *fp_copy;	//director_logë¥¼ ìœ„í•œê²ƒê³¼ director_listë¥¼ ì‹œê°„ë¶™ì—¬ì„œ ì €ì¥í•  íŒŒì¼ í¬ì¸í„°
+	FILE *fp, *fp_copy;	//director_log¸¦ À§ÇÑ°Í°ú director_list¸¦ ½Ã°£ºÙ¿©¼­ ÀúÀåÇÒ ÆÄÀÏ Æ÷ÀÎÅÍ
 	fp = fopen("director_log", "r");
 	if (fp == NULL)
 		return;
 
-	while (fgets(line, 200, fp) != NULL) {	//logíŒŒì¼ì„ ì¤„ì´ ì—†ì„ ë•Œê¹Œì§€ ì½ìŒ
-		*(line + strlen(line) - 1) = 0;	//ë§ˆì§€ë§‰ì— ì½ì–´ì˜¨ \nì„ ì—†ì• ì¤Œ
+	while (fgets(line, 200, fp) != NULL) {	//logÆÄÀÏÀ» ÁÙÀÌ ¾øÀ» ¶§±îÁö ÀĞÀ½
+		*(line + strlen(line) - 1) = 0;	//¸¶Áö¸·¿¡ ÀĞ¾î¿Â \nÀ» ¾ø¾ÖÁÜ
 		//printf("%s\n", line);
 
 		token = strtok(line, ":");
@@ -312,15 +326,15 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 
 		token = strtok(NULL, ":");
 		//printf("serial_num : %s\n", token);
-		serial_num = atoi(token);	//ë¬¸ìì—´ì¸ tokenì„ ì •ìˆ˜ë¡œ ë³€í™˜
+		serial_num = atoi(token);	//¹®ÀÚ¿­ÀÎ tokenÀ» Á¤¼ö·Î º¯È¯
 
 		if (!strcmp(menu, "add"))
-			serial_d_num = serial_num + 1;	//ë‚˜ì¤‘ì— add dë¥¼ í•  ë•Œ ì˜¬ë°”ë¥¸ ì‹œë¦¬ì–¼ ë„˜ë²„ë¥¼ ê°–ê²Œí•¨
+			serial_d_num = serial_num + 1;	//³ªÁß¿¡ add d¸¦ ÇÒ ¶§ ¿Ã¹Ù¸¥ ½Ã¸®¾ó ³Ñ¹ö¸¦ °®°ÔÇÔ
 
 
 		if (strcmp(menu, "delete")) {
 			token = strtok(NULL, ":");
-			token = anti_colon_proc(token);	//??;ë¥¼ :ë¡œ ë°”ê¿”ì¤Œ
+			token = anti_colon_proc(token);	//??;¸¦ :·Î ¹Ù²ãÁÜ
 			//printf("name : %s\n", token);
 			name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(name, token);
@@ -339,18 +353,18 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 
 			token = strtok(NULL, ":");
 			token = anti_colon_proc(token);
-			if (*token == '=') {
+			/*if (*token == '=') {
 				//printf("= is comparamised\n");
-				*(token + strlen(token) - 1) = 0;	//ë§ˆì§€ë§‰ì— ì½ì–´ì˜¨ í¼ í”¼ë“œ(form feed?)ë¥¼ ì—†ì• ì¤Œ
+				*(token + strlen(token) - 1) = 0;	//¸¶Áö¸·¿¡ ÀĞ¾î¿Â Æû ÇÇµå(form feed?)¸¦ ¾ø¾ÖÁÜ
 			}
-			//printf("best_movies : %s\n", token);
+			//printf("best_movies : %s\n", token);*/
 			best_movies = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(best_movies, token);
 		}
 
 
-		if (!strcmp(menu, "add")) {	//tagê°€ addì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
-			if (root_d_num == 0) {	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ì²˜ìŒ í—¤ë”ë¥¼ ì €ì¥ 
+		if (!strcmp(menu, "add")) {	//tag°¡ addÀÌ¸é ½ÇÇàÇÏ´Â °Í
+			if (root_d_num == 0) {	//¸µÅ©µå ¸®½ºÆ®ÀÇ Ã³À½ Çì´õ¸¦ ÀúÀå
 				root_director = d_load;
 				root_d_num = 1;
 			}
@@ -363,16 +377,16 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 			strcpy(d_load->birth, birth);
 			d_load->best_movies = (char *)malloc(sizeof(char) * strlen(best_movies) + 1);
 			strcpy(d_load->best_movies, best_movies);
-			
-			d_load->next = (director *)malloc(sizeof(director));	//d_loadì˜ nextí¬ì¸í„°ë¥¼ ë™ì í• ë‹¹
-			d_load = d_load->next;	//d_loadì„ í˜„ì¬ d_loadì˜ nextë¡œ ë°”ê¿ˆ
-			d_temp = d_load;	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ë§ˆì§€ë§‰ì„ d_tempì—ë‹¤ê°€ ì €ì¥
-			d_load->next = NULL;	//ì§€ê¸ˆì˜ d_loadì˜ nextë¥¼ nullë¡œ í•´ì¤Œ
+
+			d_load->next = (director *)malloc(sizeof(director));	//d_loadÀÇ nextÆ÷ÀÎÅÍ¸¦ µ¿ÀûÇÒ´ç
+			d_load = d_load->next;	//d_loadÀ» ÇöÀç d_loadÀÇ next·Î ¹Ù²Ş
+			d_temp = d_load;	//¸µÅ©µå ¸®½ºÆ®ÀÇ ¸¶Áö¸·À» d_temp¿¡´Ù°¡ ÀúÀå
+			d_load->next = NULL;	//Áö±İÀÇ d_loadÀÇ next¸¦ null·Î ÇØÁÜ
 		}
-		else if (!strcmp(menu, "update")) {	//tagê°€ updateì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
+		else if (!strcmp(menu, "update")) {	//tag°¡ updateÀÌ¸é ½ÇÇàÇÏ´Â °Í
 			d_load = root_director;
 			while (1) {
-				if (d_load->serial_number == serial_num) {	//updateí•˜ê³ ì í•˜ëŠ” ì‹œë¦¬ì–¼ ë„˜ë²„ì™€ ì¼ì¹˜í•˜ë©´ ì‹¤í–‰
+				if (d_load->serial_number == serial_num) {	//updateÇÏ°íÀÚ ÇÏ´Â ½Ã¸®¾ó ³Ñ¹ö¿Í ÀÏÄ¡ÇÏ¸é ½ÇÇà
 					if (strcmp(name, "="))
 						strcpy(d_load->name, name);
 					if (strcmp(sex, "="))
@@ -390,10 +404,10 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 			}
 			d_load = d_temp;
 		}
-		else if (!strcmp(menu, "delete")) {	//tagê°€ deleteì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
+		else if (!strcmp(menu, "delete")) {	//tag°¡ deleteÀÌ¸é ½ÇÇàÇÏ´Â °Í
 			d_load = root_director;
 			while (1) {
-				if (d_load->serial_number == serial_num) {	//deleteí•˜ê³ ì í•˜ëŠ” ì‹œë¦¬ì–¼ ë„˜ë²„ì™€ ì¼ì¹˜í•˜ë©´ ì‹¤í–‰
+				if (d_load->serial_number == serial_num) {	//deleteÇÏ°íÀÚ ÇÏ´Â ½Ã¸®¾ó ³Ñ¹ö¿Í ÀÏÄ¡ÇÏ¸é ½ÇÇà
 					d_load->name = NULL;
 					d_load->sex = NULL;
 					d_load->birth = NULL;
@@ -411,7 +425,7 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 	}
 	d = d_load;
 
-	strcat(cp_file_name, nt_mon);	//movie_listíŒŒì¼ì„ ìƒˆë¡œ ì €ì¥í•  ë•Œ í™•ì¥ìë¥¼ ë‚ ì§œë¡œ í•˜ê²Œ í•˜ëŠ” ë¶€ë¶„
+	strcat(cp_file_name, nt_mon);	//movie_listÆÄÀÏÀ» »õ·Î ÀúÀåÇÒ ¶§ È®ÀåÀÚ¸¦ ³¯Â¥·Î ÇÏ°Ô ÇÏ´Â ºÎºĞ
 	if (atoi(nt_mday) < 10) {
 		mystrcat(cp_file_name, "0");
 		mystrcat(cp_file_name, nt_mday);
@@ -441,7 +455,7 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 	//printf("full_file_name : %s\n", full_file_name);
 
 	fp_copy = fopen(full_file_name, "wt");
-	rewind(fp);	//movie_listì˜ ë§¨ ì•ìœ¼ë¡œ íŒŒì¼ í¬ì¸í„°ë¥¼ ì˜®ê¹€
+	rewind(fp);	//movie_listÀÇ ¸Ç ¾ÕÀ¸·Î ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ¿Å±è
 	while ((ch = fgetc(fp)) != EOF)
 		fputc(ch, fp_copy);
 
@@ -450,14 +464,14 @@ void load_director() {	//director_logë¥¼ ì½ì–´ì„œ d ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë
 	printf("\n");
 }
 
-void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ ë†“ëŠ” í•¨ìˆ˜
-	char *token, *line, *menu;	//í† í°ê³¼ í•œì¤„ì„ ì €ì¥í•˜ëŠ” ê²ƒê³¼ ë©”ë‰´(add, delete, update)ë¥¼ ì €ì¥í•  í¬ì¸í„°
-	char *name, *sex, *birth, *best_movies;	//actorì— ë„£ì„ ìª¼ê°œë†“ì€ ë©¤ë²„ë“¤ ì €ì¥í•  í¬ì¸í„°
-	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//ì‹œê°„ë“¤ì„ ë¬¸ìì—´ë¡œ ë³€í™˜í•´ì„œ ì €ì¥í•  í¬ì¸í„°ì™€ ë‹¤ í•©ì¹  ë¶€ë¶„
+void load_actor() {	//actor_log¸¦ ÀĞ¾î¼­ a ¸µÅ©µå ¸®½ºÆ®¸¦ ¸¸µé¾î ³õ´Â ÇÔ¼ö
+	char *token, *line, *menu;	//ÅäÅ«°ú ÇÑÁÙÀ» ÀúÀåÇÏ´Â °Í°ú ¸Ş´º(add, delete, update)¸¦ ÀúÀåÇÒ Æ÷ÀÎÅÍ
+	char *name, *sex, *birth, *best_movies;	//actor¿¡ ³ÖÀ» ÂÉ°³³õÀº ¸â¹öµé ÀúÀåÇÒ Æ÷ÀÎÅÍ
+	char *full_file_name, *cp_file_name, *nt_year, *nt_mon, *nt_mday, *nt_hour, *nt_min;	//½Ã°£µéÀ» ¹®ÀÚ¿­·Î º¯È¯ÇØ¼­ ÀúÀåÇÒ Æ÷ÀÎÅÍ¿Í ´Ù ÇÕÄ¥ ºÎºĞ
 	int serial_num;
 	char ch;
 	actor *a_load, *a_temp;
-	time_t t = time(NULL);	//íƒ€ì„ êµ¬ì¡°ì²´ ì„ ì–¸
+	time_t t = time(NULL);	//Å¸ÀÓ ±¸Á¶Ã¼ ¼±¾ğ
 	struct tm tm = *localtime(&t);
 	a_load = (actor *)malloc(sizeof(actor));
 
@@ -484,13 +498,13 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 	token = (char *)malloc(sizeof(char) * 50);
 	line = (char *)malloc(sizeof(char) * 200);
 
-	FILE *fp, *fp_copy;	//actor_logë¥¼ ìœ„í•œê²ƒê³¼ actor_listë¥¼ ì‹œê°„ë¶™ì—¬ì„œ ì €ì¥í•  íŒŒì¼ í¬ì¸í„°
+	FILE *fp, *fp_copy;	//actor_log¸¦ À§ÇÑ°Í°ú actor_list¸¦ ½Ã°£ºÙ¿©¼­ ÀúÀåÇÒ ÆÄÀÏ Æ÷ÀÎÅÍ
 	fp = fopen("actor_log", "r");
 	if (fp == NULL)
 		return;
 
-	while (fgets(line, 200, fp) != NULL) {	//logíŒŒì¼ì„ ì¤„ì´ ì—†ì„ ë•Œê¹Œì§€ ì½ìŒ
-		*(line + strlen(line) - 1) = 0;	//ë§ˆì§€ë§‰ì— ì½ì–´ì˜¨ \nì„ ì—†ì• ì¤Œ
+	while (fgets(line, 200, fp) != NULL) {	//logÆÄÀÏÀ» ÁÙÀÌ ¾øÀ» ¶§±îÁö ÀĞÀ½
+		*(line + strlen(line) - 1) = 0;	//¸¶Áö¸·¿¡ ÀĞ¾î¿Â \nÀ» ¾ø¾ÖÁÜ
 		//printf("%s\n", line);
 
 		token = strtok(line, ":");
@@ -500,15 +514,15 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 
 		token = strtok(NULL, ":");
 		//printf("serial_num : %s\n", token);
-		serial_num = atoi(token);	//ë¬¸ìì—´ì¸ tokenì„ ì •ìˆ˜ë¡œ ë³€í™˜
+		serial_num = atoi(token);	//¹®ÀÚ¿­ÀÎ tokenÀ» Á¤¼ö·Î º¯È¯
 
 		if (!strcmp(menu, "add"))
-			serial_d_num = serial_num + 1;	//ë‚˜ì¤‘ì— add aë¥¼ í•  ë•Œ ì˜¬ë°”ë¥¸ ì‹œë¦¬ì–¼ ë„˜ë²„ë¥¼ ê°–ê²Œí•¨
+			serial_a_num = serial_num + 1;	//³ªÁß¿¡ add a¸¦ ÇÒ ¶§ ¿Ã¹Ù¸¥ ½Ã¸®¾ó ³Ñ¹ö¸¦ °®°ÔÇÔ
 
 
 		if (strcmp(menu, "delete")) {
 			token = strtok(NULL, ":");
-			token = anti_colon_proc(token);	//??;ë¥¼ :ë¡œ ë°”ê¿”ì¤Œ
+			token = anti_colon_proc(token);	//??;¸¦ :·Î ¹Ù²ãÁÜ
 			//printf("name : %s\n", token);
 			name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(name, token);
@@ -527,18 +541,18 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 
 			token = strtok(NULL, ":");
 			token = anti_colon_proc(token);
-			if (*token == '=') {
+			/*if (*token == '=') {
 				//printf("= is comparamised\n");
-				*(token + strlen(token) - 1) = 0;	//ë§ˆì§€ë§‰ì— ì½ì–´ì˜¨ í¼ í”¼ë“œ(form feed?)ë¥¼ ì—†ì• ì¤Œ
-			}
+				*(token + strlen(token) - 1) = 0;	//¸¶Áö¸·¿¡ ÀĞ¾î¿Â Æû ÇÇµå(form feed?)¸¦ ¾ø¾ÖÁÜ
+			}*/
 			//printf("best_movies : %s\n", token);
 			best_movies = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(best_movies, token);
 		}
 
 
-		if (!strcmp(menu, "add")) {	//tagê°€ addì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
-			if (root_a_num == 0) {	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ì²˜ìŒ í—¤ë”ë¥¼ ì €ì¥ 
+		if (!strcmp(menu, "add")) {	//tag°¡ addÀÌ¸é ½ÇÇàÇÏ´Â °Í
+			if (root_a_num == 0) {	//¸µÅ©µå ¸®½ºÆ®ÀÇ Ã³À½ Çì´õ¸¦ ÀúÀå
 				root_actor = a_load;
 				root_a_num = 1;
 			}
@@ -552,15 +566,15 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 			a_load->best_movies = (char *)malloc(sizeof(char) * strlen(best_movies) + 1);
 			strcpy(a_load->best_movies, best_movies);
 
-			a_load->next = (actor *)malloc(sizeof(actor));	//a_loadì˜ nextí¬ì¸í„°ë¥¼ ë™ì í• ë‹¹
-			a_load = a_load->next;	//a_loadì„ í˜„ì¬ a_loadì˜ nextë¡œ ë°”ê¿ˆ
-			a_temp = a_load;	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ì˜ ë§ˆì§€ë§‰ì„ a_tempì—ë‹¤ê°€ ì €ì¥
-			a_load->next = NULL;	//ì§€ê¸ˆì˜ a_loadì˜ nextë¥¼ nullë¡œ í•´ì¤Œ
+			a_load->next = (actor *)malloc(sizeof(actor));	//a_loadÀÇ nextÆ÷ÀÎÅÍ¸¦ µ¿ÀûÇÒ´ç
+			a_load = a_load->next;	//a_loadÀ» ÇöÀç a_loadÀÇ next·Î ¹Ù²Ş
+			a_temp = a_load;	//¸µÅ©µå ¸®½ºÆ®ÀÇ ¸¶Áö¸·À» a_temp¿¡´Ù°¡ ÀúÀå
+			a_load->next = NULL;	//Áö±İÀÇ a_loadÀÇ next¸¦ null·Î ÇØÁÜ
 		}
-		else if (!strcmp(menu, "update")) {	//tagê°€ updateì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
+		else if (!strcmp(menu, "update")) {	//tag°¡ updateÀÌ¸é ½ÇÇàÇÏ´Â °Í
 			a_load = root_actor;
 			while (1) {
-				if (a_load->serial_number == serial_num) {	//updateí•˜ê³ ì í•˜ëŠ” ì‹œë¦¬ì–¼ ë„˜ë²„ì™€ ì¼ì¹˜í•˜ë©´ ì‹¤í–‰
+				if (a_load->serial_number == serial_num) {	//updateÇÏ°íÀÚ ÇÏ´Â ½Ã¸®¾ó ³Ñ¹ö¿Í ÀÏÄ¡ÇÏ¸é ½ÇÇà
 					if (strcmp(name, "="))
 						strcpy(a_load->name, name);
 					if (strcmp(sex, "="))
@@ -578,10 +592,10 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 			}
 			a_load = a_temp;
 		}
-		else if (!strcmp(menu, "delete")) {	//tagê°€ deleteì´ë©´ ì‹¤í–‰í•˜ëŠ” ê²ƒ
+		else if (!strcmp(menu, "delete")) {	//tag°¡ deleteÀÌ¸é ½ÇÇàÇÏ´Â °Í
 			a_load = root_actor;
 			while (1) {
-				if (a_load->serial_number == serial_num) {	//deleteí•˜ê³ ì í•˜ëŠ” ì‹œë¦¬ì–¼ ë„˜ë²„ì™€ ì¼ì¹˜í•˜ë©´ ì‹¤í–‰
+				if (a_load->serial_number == serial_num) {	//deleteÇÏ°íÀÚ ÇÏ´Â ½Ã¸®¾ó ³Ñ¹ö¿Í ÀÏÄ¡ÇÏ¸é ½ÇÇà
 					a_load->name = NULL;
 					a_load->sex = NULL;
 					a_load->birth = NULL;
@@ -599,7 +613,7 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 	}
 	a = a_load;
 
-	strcat(cp_file_name, nt_mon);	//movie_listíŒŒì¼ì„ ìƒˆë¡œ ì €ì¥í•  ë•Œ í™•ì¥ìë¥¼ ë‚ ì§œë¡œ í•˜ê²Œ í•˜ëŠ” ë¶€ë¶„
+	strcat(cp_file_name, nt_mon);	//movie_listÆÄÀÏÀ» »õ·Î ÀúÀåÇÒ ¶§ È®ÀåÀÚ¸¦ ³¯Â¥·Î ÇÏ°Ô ÇÏ´Â ºÎºĞ
 	if (atoi(nt_mday) < 10) {
 		mystrcat(cp_file_name, "0");
 		mystrcat(cp_file_name, nt_mday);
@@ -629,7 +643,7 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 	//printf("full_file_name : %s\n", full_file_name);
 
 	fp_copy = fopen(full_file_name, "wt");
-	rewind(fp);	//movie_listì˜ ë§¨ ì•ìœ¼ë¡œ íŒŒì¼ í¬ì¸í„°ë¥¼ ì˜®ê¹€
+	rewind(fp);	//movie_listÀÇ ¸Ç ¾ÕÀ¸·Î ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ¿Å±è
 	while ((ch = fgetc(fp)) != EOF)
 		fputc(ch, fp_copy);
 
@@ -638,7 +652,60 @@ void load_actor() {	//actor_logë¥¼ ì½ì–´ì„œ a ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ë¥¼ ë§Œë“¤ì–´ 
 	printf("\n");
 }
 
-void handler(int sig) {	//Ctrl + c ëˆŒëŸ¬ë„ ì¢…ë£Œë˜ì§€ ì•Šê³  ë¬¼ì–´ë³´ê²Œ í•˜ëŠ” í•¨ìˆ˜
+void link_director(){
+	char *director_name;
+	movie *m_p;
+	director *d_p;
+	m_p = root_movie;
+	int i = 1;
+
+	if(m_p == NULL)
+		return;
+
+	while(1){
+		m_p->d_link = NULL;	//ÀÏ´Ü NULL·Î ¸¸µé¾îÁà¼­ Ã£¾Æ¼­ ¾øÀ¸¸é °è¼Ó NULLÀÌ°Ô ÇÔ
+		if(m_p->title == NULL){
+			if(m_p->next == NULL)
+				break;
+			m_p = m_p->next;
+			continue;
+		}
+		director_name = (char *)malloc(sizeof(char) * strlen(m_p->director) + 1);
+		strcpy(director_name, m_p->director);
+		printf("director name : %s\n", director_name);
+		d_p = root_director;
+		printf("start to enter\n");
+		while(1){
+			if(d_p->name == NULL){
+				if(d_p->next == NULL)
+					break;
+				d_p = d_p->next;
+				printf("skip deleted...\n");
+				continue;
+			}
+
+			if(!strcmp(director_name, d_p->name)) {
+				m_p->d_link = d_p;	//movie±¸Á¶Ã¼ÀÇ d_link°¡ director ÀÌ¸§ÀÌ ¸Â´Â °É·Î °¡¸®Å°°Ô ÇÔ
+				printf("movie linked director : %s\n", director_name);
+				break;
+			}
+			if(d_p->next == NULL)
+				break;
+			d_p = d_p->next;
+			printf("finding director...\n");
+		}
+		printf("one time did\n");
+		if(m_p->next == NULL){
+			printf("what is problem?\n");
+			break;
+		}
+		printf("%d movie struct passed\n", i++);
+		m_p = m_p->next;
+		printf("is it here?\n\n");
+	}
+}
+
+void handler(int sig) {	//Ctrl + c ´­·¯µµ Á¾·áµÇÁö ¾Ê°í ¹°¾îº¸°Ô ÇÏ´Â ÇÔ¼ö
 	char *answer;
 	answer = (char *)malloc(sizeof(char) * 5);
 	printf("\nControl+c\n");
@@ -651,29 +718,29 @@ void handler(int sig) {	//Ctrl + c ëˆŒëŸ¬ë„ ì¢…ë£Œë˜ì§€ ì•Šê³  ë¬¼ì–´ë³´ê²Œ í•
 		exit(1);
 }
 
-void add_movie(){	//movie ì •ë³´ ì…ë ¥ë°›ëŠ” í•¨ìˆ˜
-	char *temp;	//ê¸€ìë¥¼ ì…ë ¥ë°›ì„ ì„ì‹œ í¬ì¸í„°
+void add_movie(){	//movie Á¤º¸ ÀÔ·Â¹Ş´Â ÇÔ¼ö
+	char *temp;	//±ÛÀÚ¸¦ ÀÔ·Â¹ŞÀ» ÀÓ½Ã Æ÷ÀÎÅÍ
 	FILE *fp;
 	fp = fopen("movie_log", "at");
 
-	temp = (char *)malloc(sizeof(char) * 200);	//ì„ì‹œ í¬ì¸í„° ë™ì í• ë‹¹
+	temp = (char *)malloc(sizeof(char) * 200);	//ÀÓ½Ã Æ÷ÀÎÅÍ µ¿ÀûÇÒ´ç
 
-	if (root_m_num == 0) {	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ ì²˜ìŒ í—¤ë”ë¥¼ root_movieì— ì €ì¥
+	if (root_m_num == 0) {	//¸µÅ©µå ¸®½ºÆ® Ã³À½ Çì´õ¸¦ root_movie¿¡ ÀúÀå
 		root_movie = m;
 		root_m_num = 1;
-	}	
+	}
 	m->serial_number = serial_m_num++;
 
 	printf("title > ");
-	gets(temp);	//title ì…ë ¥
-	m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//ì…ë ¥ë°›ì€ ê¸€ìì˜ í¬ê¸°ë§Œí¼ ë™ì í• ë‹¹ ë°›ìŒ(+1ì€ ë§¨ë’¤ì— nullì„ ë„£ì„ ê³µê°„)
-	strcpy(m->title, temp);	//tempë¥¼ êµ¬ì¡°ì²´ ë©¤ë²„ì— ì˜®ê¹€
+	gets(temp);	//title ÀÔ·Â
+	m->title = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//ÀÔ·Â¹ŞÀº ±ÛÀÚÀÇ Å©±â¸¸Å­ µ¿ÀûÇÒ´ç ¹ŞÀ½(+1Àº ¸ÇµÚ¿¡ nullÀ» ³ÖÀ» °ø°£)
+	strcpy(m->title, temp);	//temp¸¦ ±¸Á¶Ã¼ ¸â¹ö¿¡ ¿Å±è
 
 	printf("genre > ");
 	gets(temp);
 	m->genre = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->genre, temp);
-	
+
 	printf("director > ");
 	gets(temp);
 	m->director = (char *)malloc(sizeof(char) * strlen(temp) + 1);
@@ -689,38 +756,37 @@ void add_movie(){	//movie ì •ë³´ ì…ë ¥ë°›ëŠ” í•¨ìˆ˜
 	getchar();
 	m->time = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->time, temp);
-	
+
 	printf("actors > ");
 	gets(temp);
 	m->actors = (char *)malloc(sizeof(char) * strlen(temp) + 1);
 	strcpy(m->actors, temp);
-	
+
 	fprintf(fp, "add:%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, colon_proc(m->title), colon_proc(m->genre), colon_proc(m->director), colon_proc(m->year), colon_proc(m->time), colon_proc(m->actors));
 
-	m->next = (movie *)malloc(sizeof(movie));	//mì˜ nextí¬ì¸í„°ë¥¼ ë™ì í• ë‹¹
-	m = m->next;	//mì„ í˜„ì¬ mì˜ nextë¡œ ë°”ê¿ˆ
-	m->next = NULL;	//ì§€ê¸ˆì˜ mì˜ nextë¥¼ nullë¡œ í•´ì¤Œ
+	m->next = (movie *)malloc(sizeof(movie));	//mÀÇ nextÆ÷ÀÎÅÍ¸¦ µ¿ÀûÇÒ´ç
+	m = m->next;	//mÀ» ÇöÀç mÀÇ next·Î ¹Ù²Ş
+	m->next = NULL;	//Áö±İÀÇ mÀÇ next¸¦ null·Î ÇØÁÜ
 
 	fclose(fp);
 	printf("@@ Done\n\n");
 }
 
-void add_director() {	//director ì •ë³´ ì…ë ¥ë°›ëŠ” í•¨ìˆ˜
+void add_director() {	//director Á¤º¸ ÀÔ·Â¹Ş´Â ÇÔ¼ö
 	char *temp;
 	FILE *fp;
 	temp = (char *)malloc(sizeof(char) * 200);
 	fp = fopen("director_log", "at");
 
-	if (root_d_num == 0) {	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ ì²˜ìŒ í—¤ë”ë¥¼ root_directorì— ì €ì¥
+	if (root_d_num == 0) {	//¸µÅ©µå ¸®½ºÆ® Ã³À½ Çì´õ¸¦ root_director¿¡ ÀúÀå
 		root_director = d;
 		root_d_num = 1;
 	}
 	d->serial_number = serial_d_num++;
-
 	printf("name > ");
-	gets(temp);	//name ì…ë ¥
-	d->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//ì…ë ¥ë°›ì€ ê¸€ìì˜ í¬ê¸°ë§Œí¼ ë™ì í• ë‹¹ ë°›ìŒ(+1ì€ ë§¨ë’¤ì— nullì„ ë„£ì„ ê³µê°„)
-	strcpy(d->name, temp);	//tempë¥¼ êµ¬ì¡°ì²´ ë©¤ë²„ì— ì˜®ê¹€
+	gets(temp);	//name ÀÔ·Â
+	d->name = (char *)malloc(sizeof(char) * strlen(temp) + 1);	//ÀÔ·Â¹ŞÀº ±ÛÀÚÀÇ Å©±â¸¸Å­ µ¿ÀûÇÒ´ç ¹ŞÀ½(+1Àº ¸ÇµÚ¿¡ nullÀ» ³ÖÀ» °ø°£)
+	strcpy(d->name, temp);	//temp¸¦ ±¸Á¶Ã¼ ¸â¹ö¿¡ ¿Å±è
 
 	printf("sex > ");
 	scanf("%s", temp);
@@ -740,21 +806,21 @@ void add_director() {	//director ì •ë³´ ì…ë ¥ë°›ëŠ” í•¨ìˆ˜
 
 	fprintf(fp, "add:%d:%s:%s:%s:%s\n", d->serial_number, colon_proc(d->name), colon_proc(d->sex), colon_proc(d->birth), colon_proc(d->best_movies));
 
-	d->next = (director *)malloc(sizeof(director));	//dì˜ nextí¬ì¸í„°ë¥¼ ë™ì í• ë‹¹
-	d = d->next;	//dë¥¼ í˜„ì¬ dì˜ nextë¡œ ë°”ê¿ˆ
-	d->next = NULL;	//ì§€ê¸ˆì˜ dì˜ nextë¥¼ nullë¡œ í•´ì¤Œ
+	d->next = (director *)malloc(sizeof(director));	//dÀÇ nextÆ÷ÀÎÅÍ¸¦ µ¿ÀûÇÒ´ç
+	d = d->next;	//d¸¦ ÇöÀç dÀÇ next·Î ¹Ù²Ş
+	d->next = NULL;	//Áö±İÀÇ dÀÇ next¸¦ null·Î ÇØÁÜ
 
 	fclose(fp);
 	printf("@@ Done\n\n");
 }
 
-void add_actor() {	//actorì˜ ì •ë³´ë¥¼ ì…ë ¥ë°›ëŠ” í•¨ìˆ˜
+void add_actor() {	//actorÀÇ Á¤º¸¸¦ ÀÔ·Â¹Ş´Â ÇÔ¼ö
 	char *temp;
 	FILE *fp;
 	temp = (char *)malloc(sizeof(char) * 200);
 	fp = fopen("actor_log", "at");
 
-	if (root_a_num == 0) {	//ë§í¬ë“œ ë¦¬ìŠ¤íŠ¸ ì²˜ìŒ í—¤ë”ë¥¼ root_actorì— ì €ì¥
+	if (root_a_num == 0) {	//¸µÅ©µå ¸®½ºÆ® Ã³À½ Çì´õ¸¦ root_actor¿¡ ÀúÀå
 		root_actor = a;
 		root_a_num = 1;
 	}
@@ -783,9 +849,9 @@ void add_actor() {	//actorì˜ ì •ë³´ë¥¼ ì…ë ¥ë°›ëŠ” í•¨ìˆ˜
 
 	fprintf(fp, "add:%d:%s:%s:%s:%s\n", a->serial_number, colon_proc(a->name), colon_proc(a->sex), colon_proc(a->birth), colon_proc(a->best_movies));
 
-	a->next = (actor *)malloc(sizeof(actor));	//aì˜ nextí¬ì¸í„°ë¥¼ ë™ì í• ë‹¹
-	a = a->next;	//aì„ í˜„ì¬ aì˜ nextë¡œ ë°”ê¿ˆ
-	a->next = NULL;	//ì§€ê¸ˆì˜ aì˜ nextë¥¼ nullë¡œ í•´ì¤Œ
+	a->next = (actor *)malloc(sizeof(actor));	//aÀÇ nextÆ÷ÀÎÅÍ¸¦ µ¿ÀûÇÒ´ç
+	a = a->next;	//aÀ» ÇöÀç aÀÇ next·Î ¹Ù²Ş
+	a->next = NULL;	//Áö±İÀÇ aÀÇ next¸¦ null·Î ÇØÁÜ
 
 	fclose(fp);
 	printf("@@ Done\n\n");
@@ -795,7 +861,7 @@ void save_director() {
 	FILE *fp;
 	fp = fopen("director_list", "wt");
 	d = root_director;
-	while (d->next != NULL) {	
+	while (d->next != NULL) {
 		if (d->name == NULL) {
 			d = d->next;
 			continue;
@@ -843,19 +909,19 @@ void save_actor() {
 	printf("@@ Done\n\n");
 }
 
-char *colon_proc(char *s) {	//':'ì„ "??;"ë¡œ ì¹˜í™˜í•˜ëŠ” í•¨ìˆ˜
-	char *result, *sr;	//resultëŠ” ì¹˜í™˜í•œ ê²°ê³¼ì €ì¥, srì€ ê³„ì†í•´ì„œ ë”°ì ¸ì£¼ë©´ì„œ ë°”ë€ŒëŠ” ë¬¸ìì—´
-	char *colon, *newstr;	//ì½œë¡ ì„ ì €ì¥í•  ê³³ê³¼ ??;ë¥¼ ì €ì¥í•  ê³³
-	colon = (char *)malloc(sizeof(char) * 2);	//ì½œë¡  ë™ì  í• ë‹¹
-	newstr = (char *)malloc(sizeof(char) * 4);	//??; ë™ì í• ë‹¹
+char *colon_proc(char *s) {	//':'À» "??;"·Î Ä¡È¯ÇÏ´Â ÇÔ¼ö
+	char *result, *sr;	//result´Â Ä¡È¯ÇÑ °á°úÀúÀå, srÀº °è¼ÓÇØ¼­ µûÁ®ÁÖ¸é¼­ ¹Ù²î´Â ¹®ÀÚ¿­
+	char *colon, *newstr;	//Äİ·ĞÀ» ÀúÀåÇÒ °÷°ú ??;¸¦ ÀúÀåÇÒ °÷
+	colon = (char *)malloc(sizeof(char) * 2);	//Äİ·Ğ µ¿Àû ÇÒ´ç
+	newstr = (char *)malloc(sizeof(char) * 4);	//??; µ¿ÀûÇÒ´ç
 	colon = ":";
 	newstr = "??;";
 
-	size_t i, count = 0;	//ì‚¬ì´ì¦ˆë¥¼ ë°›ì„ ë³€ìˆ˜ i ì„ ì–¸
+	size_t i, count = 0;	//»çÀÌÁî¸¦ ¹ŞÀ» º¯¼ö i ¼±¾ğ
 	size_t colonlen = strlen(colon);
 	size_t newlen = strlen(newstr);
 
-	for (i = 0; s[i] != '\0';) {	//:ë¥¼ ??;ë¡œ ë°”ê¾¸ë©´ì„œ í•„ìš”í•  ë©”ëª¨ë¦¬ë¥¼ ê³„ì‚°í•˜ëŠ” ë°˜ë³µë¬¸
+	for (i = 0; s[i] != '\0';) {	//:¸¦ ??;·Î ¹Ù²Ù¸é¼­ ÇÊ¿äÇÒ ¸Ş¸ğ¸®¸¦ °è»êÇÏ´Â ¹İº¹¹®
 		if (memcmp(&s[i], colon, colonlen) == 0) {
 			count++;
 			i += colonlen;
@@ -863,10 +929,10 @@ char *colon_proc(char *s) {	//':'ì„ "??;"ë¡œ ì¹˜í™˜í•˜ëŠ” í•¨ìˆ˜
 		else i++;
 	}
 
-	result = (char *)malloc(i + 1 + count * (newlen - colonlen));	//í•„ìš”í•œ ë©”ëª¨ë¦¬ë§Œí¼ ìƒˆë¡œ ë™ì í• ë‹¹
+	result = (char *)malloc(i + 1 + count * (newlen - colonlen));	//ÇÊ¿äÇÑ ¸Ş¸ğ¸®¸¸Å­ »õ·Î µ¿ÀûÇÒ´ç
 
 	sr = result;
-	while (*s) {	//ì½œë¡ ì„ ??;ë¡œ ë°”ê¿”ì£¼ëŠ” ë°˜ë³µë¬¸
+	while (*s) {	//Äİ·ĞÀ» ??;·Î ¹Ù²ãÁÖ´Â ¹İº¹¹®
 		if (memcmp(s, colon, colonlen) == 0) {
 			memcpy(sr, newstr, newlen);
 			sr += newlen;
@@ -874,24 +940,24 @@ char *colon_proc(char *s) {	//':'ì„ "??;"ë¡œ ì¹˜í™˜í•˜ëŠ” í•¨ìˆ˜
 		}
 		else *sr++ = *s++;
 	}
-	*sr = '\0';	//ë§ˆì§€ë§‰ì— NULL ì €ì¥
+	*sr = '\0';	//¸¶Áö¸·¿¡ NULL ÀúÀå
 
 	return result;
 }
 
-char *anti_colon_proc(char *s) {	//'??;'ì„ ":"ë¡œ ì¹˜í™˜í•˜ëŠ” í•¨ìˆ˜
-	char *result, *sr;	//resultëŠ” ì¹˜í™˜í•œ ê²°ê³¼ì €ì¥, srì€ ê³„ì†í•´ì„œ ë”°ì ¸ì£¼ë©´ì„œ ë°”ë€ŒëŠ” ë¬¸ìì—´
-	char *anti_colon, *newstr;	//??;ì„ ì €ì¥í•  ê³³ê³¼ ì½œë¡ ì„ ì €ì¥í•  ê³³
-	anti_colon = (char *)malloc(sizeof(char) * 2);	//"??;" ë™ì  í• ë‹¹
-	newstr = (char *)malloc(sizeof(char) * 4);	//':' ë™ì í• ë‹¹
+char *anti_colon_proc(char *s) {	//'??;'À» ":"·Î Ä¡È¯ÇÏ´Â ÇÔ¼ö
+	char *result, *sr;	//result´Â Ä¡È¯ÇÑ °á°úÀúÀå, srÀº °è¼ÓÇØ¼­ µûÁ®ÁÖ¸é¼­ ¹Ù²î´Â ¹®ÀÚ¿­
+	char *anti_colon, *newstr;	//??;À» ÀúÀåÇÒ °÷°ú Äİ·ĞÀ» ÀúÀåÇÒ °÷
+	anti_colon = (char *)malloc(sizeof(char) * 2);	//"??;" µ¿Àû ÇÒ´ç
+	newstr = (char *)malloc(sizeof(char) * 4);	//':' µ¿ÀûÇÒ´ç
 	anti_colon = "??;";
 	newstr = ":";
 
-	size_t i, count = 0;	//ì‚¬ì´ì¦ˆë¥¼ ë°›ì„ ë³€ìˆ˜ i ì„ ì–¸
+	size_t i, count = 0;	//»çÀÌÁî¸¦ ¹ŞÀ» º¯¼ö i ¼±¾ğ
 	size_t anti_colonlen = strlen(anti_colon);
 	size_t newlen = strlen(newstr);
 
-	for (i = 0; s[i] != '\0';) {	//??;ë¥¼ ':'ë¡œ ë°”ê¾¸ë©´ì„œ í•„ìš”í•  ë©”ëª¨ë¦¬ë¥¼ ê³„ì‚°í•˜ëŠ” ë°˜ë³µë¬¸
+	for (i = 0; s[i] != '\0';) {	//??;¸¦ ':'·Î ¹Ù²Ù¸é¼­ ÇÊ¿äÇÒ ¸Ş¸ğ¸®¸¦ °è»êÇÏ´Â ¹İº¹¹®
 		if (memcmp(&s[i], anti_colon, anti_colonlen) == 0) {
 			count++;
 			i += anti_colonlen;
@@ -899,10 +965,10 @@ char *anti_colon_proc(char *s) {	//'??;'ì„ ":"ë¡œ ì¹˜í™˜í•˜ëŠ” í•¨ìˆ˜
 		else i++;
 	}
 
-	result = (char *)malloc(i + 1 + count * (newlen - anti_colonlen));	//í•„ìš”í•œ ë©”ëª¨ë¦¬ë§Œí¼ ìƒˆë¡œ ë™ì í• ë‹¹
+	result = (char *)malloc(i + 1 + count * (newlen - anti_colonlen));	//ÇÊ¿äÇÑ ¸Ş¸ğ¸®¸¸Å­ »õ·Î µ¿ÀûÇÒ´ç
 
 	sr = result;
-	while (*s) {	//??;ì„ ì½œë¡ ìœ¼ë¡œ ë°”ê¿”ì£¼ëŠ” ë°˜ë³µë¬¸
+	while (*s) {	//??;À» Äİ·ĞÀ¸·Î ¹Ù²ãÁÖ´Â ¹İº¹¹®
 		if (memcmp(s, anti_colon, anti_colonlen) == 0) {
 			memcpy(sr, newstr, newlen);
 			sr += newlen;
@@ -910,46 +976,1172 @@ char *anti_colon_proc(char *s) {	//'??;'ì„ ":"ë¡œ ì¹˜í™˜í•˜ëŠ” í•¨ìˆ˜
 		}
 		else *sr++ = *s++;
 	}
-	*sr = '\0';	//ë§ˆì§€ë§‰ì— NULL ì €ì¥
+	*sr = '\0';	//¸¶Áö¸·¿¡ NULL ÀúÀå
 
 	return result;
 }
 
-int menu_func(char *input) {	//ëª…ë ¹ì–´ ì…ë ¥í•œê±° ì‹¤í–‰í•˜ëŠ”ê±°, ì¶”í›„ì— ê°™ì€ í˜•ì‹ìœ¼ë¡œ ì¶”ê°€í•˜ì„¸ìš©
-	char *temp;	//inputë°›ëŠ” ì„ì‹œ ë³€ìˆ˜, inputì„ ë°”ê¾¸ëŠ” ì‚¬íƒœê°€ ì¼ì–´ë‚˜ì§€ ì•Šê²Œ í•´ì¤Œ
-	char *token;	//ëª…ë ¹ì–´ ìª¼ê°œì„œ ì €ì¥í•˜ëŠ” í† í°
-	char *cut;	//ëª…ë ¹ì–´ ìª¼ê°œëŠ” ê¸°ì¤€ì´ ë‹´ê¸´ í¬ì¸í„°
-	char *menu;	//ëª…ë ¹ ë¶€ë¶„ì„ ë‹´ëŠ” í¬ì¸í„°(ì˜ˆ: update)
-	char *factor;	//ì¸ì ë¶€ë¶„ì„ ë‹´ëŠ” í¬ì¸í„°(ì˜ˆ: m, d, aì¤‘ í•˜ë‚˜ì„)
-	char *option;	//ì˜µì…˜ ë¶€ë¶„ì„ ë‹´ëŠ” í¬ì¸í„°(ì˜ˆ: tdy)
-	char *string;	//searchëª…ë ¹ì— ì“°ì´ëŠ” ì°¾ì„ ë¬¸ìì—´
-	char *file_name;	//íŒŒì¼ ì´ë¦„ì„ ë‹´ëŠ” í¬ì¸í„°(ì˜ˆ: my_list)
-	int get_serial_num;	//printë‚˜ deleteëª…ë ¹ì— ì“°ì´ëŠ” ê´€ë¦¬ ë²ˆí˜¸
-	int i;	//forë¬¸ì„ ëŒë¦¬ëŠ” ë³€ìˆ˜, ì™œ forë„ ì—†ëŠ”ë° ì„ ì–¸í–ˆëƒ ë¬¼ìœ¼ì‹ ë‹¤ë©´ ëŒ€ë‹µ ì•ˆí•˜ëŠ”ê²Œ ì¸! ì§€! ìƒ! ì •!
 
-	temp = (char *)malloc(sizeof(char) * 50);	//temp ë™ì  í• ë‹¹
-	token = (char *)malloc(sizeof(char) * 50);	//í† í° ë™ì  í• ë‹¹
-	cut = (char *)malloc(sizeof(char) * 10);	//cut ë™ì  í• ë‹¹
-	strcpy(temp, input);	//tempì— input ë³µì‚¬
-	cut = " ";	//ê³µë°±ìœ¼ë¡œ ëª…ë ¹ì–´ ìª¼ê°œê¸°
+void print_m(int sn){ //movie print ÇÔ¼ö
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+   while(m_p->serial_number != sn){ //ÀÔ·ÂÇÑ serial_number°¡ ¾ø´Â °æ¿ì ¸Ş½ÃÁö Ãâ·Â
+      if(m_p->next == NULL){
+         printf("serial number is not found\n\n");
+         return;
+      }
+      m_p = m_p->next;
+   }
+	if(m_p->title == NULL){ //deleteµÈ ·¹ÄÚµåÀÏ °æ¿ì
+	 	printf("*deleted record*\n\n", m_p->serial_number);
+		return;
+	}
+
+  printf("%d, %s, %s\n", m_p->serial_number, m_p->title == NULL ? "-" : m_p->title, m_p->genre==NULL ? "-" : m_p->genre);
+	if(root_d_num == 0){ //director¿¡ ¾Æ¹«°Íµµ ÀúÀåÀÌ ¾È µÅÀÖ´Â »óÅÂ¿¡¼­ÀÇ ¿À·ù¸¦ ÇÇÇÏ±â À§ÇÑ ÄÚµå
+		printf("(-)\n");
+	}
+
+	else{ //director ¸µÅ©µå ¸®½ºÆ®¸¦ ÀĞ¾î ÇØ´çÇÏ´Â director°¡ ÀÖ´ÂÁö °Ë»ç
+		while(1){
+			if(d_p->next == NULL){
+				break;
+			}
+			if(d_p->name == NULL){
+				d_p = d_p->next;
+				continue;
+			}
+			if(m_p->director == NULL){
+				d_p = d_p->next;
+				continue;
+			}
+			if(!strcmp(m_p->director, d_p->name)){ //ÇØ´çÇÏ´Â movie ·¹ÄÚµå¿¡¼­ Ãâ·ÂÇÏ´Â director°¡ director ·¹ÄÚµå¿¡ ÀÖÀ» °æ¿ì
+				break;
+			}
+   	   d_p = d_p->next;
+   	}
+		printf("D : %s(%s)\n", m_p->director==NULL? "-":m_p->director, d_p->next==NULL ? "-" : d_p->birth); //director°¡ ·¹ÄÚµå¿¡ ÀÖÀ» °æ¿ì¿£ ÇØ´ç ·¹ÄÚµå¿¡¼­ ÀĞ¾î¿À°í ¾ø´Â °æ¿ì¿£ "-" Ãâ·Â.
+	}
+	char *a_name = NULL;
+	char *string = NULL;
+
+	int i = 1; //¹è¿ì ¼ö¸¦ Ãâ·ÂÇÏ±â À§ÇÑ º¯¼ö
+	if(m_p->actors != NULL){
+		a_name = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1); //¹è¿ì°¡ ¸î ¸íÀÏÁö Á¤È®È÷ ¾Ë ¼ö ¾øÀ¸¹Ç·Î ÃÖ´ë°ª ÇÒ´ç.
+		string = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1);
+		strcpy(string, m_p->actors); //movie ·¹ÄÚµåÀÇ actors ÅëÂ°·Î º¹»ç
+		a_name = strtok(string, ","); //ÇÏ³ªÇÏ³ª ²÷À½
+
+	if(root_a_num == 0){ //¹è¿ì ·¹ÄÚµå¿¡ ¾Æ¹«°Íµµ ÀúÀåµÇ¾îÀÖÁö ¾ÊÀ» °æ¿ì ¿¡·¯¸¦ ÇÇÇÏ±â À§ÇÑ ÄÚµå
+	//	printf("A%d : %s(-)\n", i++, a_name);
+	}
+	else{  //actors ¸µÅ©µå ¸®½ºÆ®¸¦ ÀĞ¾î ÇØ´ç actor°¡ ÀÖ´ÂÁö °Ë»ç
+		while(1){
+			if(a_p->next == NULL)
+				break;
+			if(a_p->name == NULL){
+				a_p = a_p ->next;
+				continue;
+			}
+			if(*(a_name + strlen(a_name) - 1) == 13){
+				*(a_name + strlen(a_name) - 1) = 0;
+			}
+			if(*(a_name + strlen(a_name) - 1) == 13){
+				*(a_name + strlen(a_name) - 1) = 0;
+			}
+			if(!strncmp(a_name, a_p->name, strlen(a_name)))
+				break;
+			a_p = a_p->next;
+		}
+
+		printf("A%d : %s(%s)\n", i++, a_name==NULL? "-": a_name, (a_p->next == NULL) ? "-" : a_p->birth); //Ã£Àº °æ¿ì¿£ actor ·¹ÄÚµå¿¡¼­ Á¤º¸¸¦ ÀĞ¾î¿À°í ¾ø´Â °æ¿ì¿£ "-" Ãâ·Â
+	}
+
+		a_name = strtok(NULL, ",");
+		while(1){ //µÎ¹øÂ° actorºÎÅÍÀÇ ¹İº¹¹®(strtok ÇÔ¼öÀÇ µÎ¹øÂ° ½ÇÇàºÎÅÍ Çü½ÄÀÌ ¹Ù²î±â ¶§¹®¿¡ ³ª´©¾úÀ½)
+			if(a_name == NULL){
+				printf("\n");
+				return;
+			}
+			if(*a_name == ' '){ //¹è¿ì ÀÌ¸§ÀÌ ', '·Î ÀÔ·ÂµÇ¾úÀ» °æ¿ì strtok·Î ²÷À¸¸é ´ÙÀ½ ¹è¿ìÀÇ ÀÌ¸§Àº Ã¹±ÛÀÚ°¡ °ø¹éÀÌ¹Ç·Î °ø¹éÀ» ¾ø¾ÖÁÖ´Â ÄÚµå
+				a_name = a_name+sizeof(char);
+			}
+			a_p = root_actor;
+			while(1){
+				if(a_p->next == NULL)
+					break;
+				if(a_p->name == NULL){
+					a_p = a_p->next;
+					continue;
+				}
+				if(*(a_name + strlen(a_name) - 1) == 13){
+					*(a_name + strlen(a_name) - 1) = 0;
+				}
+				if(*(a_name + strlen(a_name) - 1) == 13){
+					*(a_name + strlen(a_name) - 1) = 0;
+				}
+				if(!strncmp(a_name, a_p->name,strlen(a_name)))
+					break;
+				a_p = a_p->next;
+			}
+
+			printf("A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
+			a_name = strtok(NULL, ",");
+		}
+	}
+	else{
+		printf("A%d : -(-)\n\n", i++);
+		return;
+	}
+
+
+
+}
+void print_d(int sn){ //director ·¹ÄÚµåÀÇ print ÇÔ¼ö
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+   while(d_p->serial_number != sn){ //serial_number°¡ ¾øÀ» °æ¿ìÀÇ ¿¡·¯¸Ş½ÃÁö Ãâ·Â
+      if(root_d_num == 0 || d_p->next == NULL){
+         printf("serial number is not found\n\n");
+         return;
+      }
+      d_p = d_p->next;
+   }
+	 if(d_p->name == NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
+
+	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1); //best_movies¿¡¼­ ÇÑ ÀÛÇ°¾¿ ²÷¾î ÀúÀåÇÏ±â À§ÇÑ Æ÷ÀÎÅÍ
+	char *string = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1); //best_movies¸¦ ÅëÂ°·Î ÀúÀåÇÏ±â À§ÇÑ Æ÷ÀÎÅÍ
+
+  printf("%d, %s, %s, %s\n", d_p->serial_number, d_p->name, d_p->sex, d_p->birth); //directorÀÇ Á¤º¸ Ãâ·Â
+	strcpy(string, d_p->best_movies);
+	a_best_movie = strtok(string, ",");
+
+	while(1){ //a_best_movie°¡ movie ·¹ÄÚµå¿¡ ÀÖ´ÂÁö °Ë»ç
+		if(a_best_movie == NULL){//best movie°¡ ÀÔ·ÂµÇÁö ¾Ê¾ÒÀ» ¶§
+			printf("\n");
+			return;
+		}
+		if(root_m_num == 0 || m_p->next == NULL){ //movie ·¹ÄÚµå¿¡ ¾Æ¹«°Íµµ ÀÔ·ÂµÇÁö ¾Ê¾Æ¼­ ¶ß´Â ¿¡·¯¸¦ ÇÇÇÏ±â À§ÇÑ ÄÚµå + ¸ø Ã£¾ÒÀ» °æ¿ì break
+			break;
+		}
+		if(m_p->title == NULL){
+			m_p = m_p->next;
+			continue;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie))){ //Ã£À¸¸é break·Î ºüÁ®³ª¿È
+			break;
+		}
+		m_p = m_p->next;
+	}
+
+	printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+	a_best_movie = strtok(NULL, ",");
+	while(1){		//µÎ¹øÂ° best_moviesºÎÅÍÀÇ ¹İº¹¹®
+		if(a_best_movie == NULL){
+			printf("\n");
+			return;
+		}
+		if(*a_best_movie == ' ')
+			a_best_movie = a_best_movie+sizeof(char);
+		m_p = root_movie;
+		while(1){
+				if(m_p->next == NULL)
+					break;
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					continue;
+				}
+				if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+					*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+				}
+				if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+					*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+				}
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)))
+					break;
+				m_p = m_p->next;
+		}
+		printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL? "-" : m_p->year, m_p->next==NULL? "-" : m_p->time);
+		a_best_movie = strtok(NULL, ",");
+	}
+
+	printf("\n");
+
+
+}
+
+
+void print_a(int sn){
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+   while(a_p->serial_number != sn){
+      if(a_p->next == NULL){
+         printf("serial number is not found\n\n");
+         return;
+      }
+      a_p = a_p->next;
+   }
+	 if(a_p->name==NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
+	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
+	char *string = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
+
+  printf("%d, %s, %s, %s\n", a_p->serial_number, a_p->name, a_p->sex, a_p->birth);
+
+	strcpy(string, a_p->best_movies);
+	a_best_movie = strtok(string, ",");
+	while(1){
+		if(a_best_movie == NULL){
+			printf("\n"); //best movie°¡ ¾Æ¿¹ ÀÔ·ÂµÇÁö ¾Ê¾ÒÀ» ¶§
+			return;
+		}
+		if(m_p->next==NULL){ //best movie°¡ ¸ñ·Ï¿¡ ¾øÀ» ¶§
+			break;
+		}
+		if(m_p->title == NULL){
+			m_p = m_p->next;
+			continue;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)))
+			break;
+		m_p = m_p->next;
+	}
+
+	printf("%s, %s, %s\n", a_best_movie, m_p->next == NULL ? "-" : m_p->year, m_p->next == NULL ? "-" : m_p->time);
+	a_best_movie = strtok(NULL, ",");
+	while(1){	//µÎ¹øÂ° ´ëÇ¥ÀÛºÎÅÍÀÇ ¹İº¹¹®
+		if(a_best_movie == NULL){
+			printf("\n");
+			return;
+		}
+		if(*a_best_movie == ' ')
+			a_best_movie = a_best_movie+sizeof(char);
+		m_p = root_movie;
+		while(1){
+				if(m_p->next == NULL){
+					break;
+				}
+				if(m_p->title == NULL){
+					m_p = m_p->next;
+					continue;
+				}
+				if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+					*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+				}
+				if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+					*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+				}
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-2))
+					break;
+				m_p = m_p->next;
+			}
+		printf("%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+		a_best_movie = strtok(NULL, ",");
+	}
+
+}
+void print_m_file(int sn, char *fn){ //sort¸¦ À§ÇÑ file Ãâ·Â ÇÔ¼ö(printÇÔ¼ö¿Í °ÅÀÇ °°À½)
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+	 FILE *ofp = fopen(fn, "a");
+   while(m_p->serial_number != sn){
+      if(m_p->next == NULL){
+         printf("serial number is not found\n\n");
+         return;
+      }
+      m_p = m_p->next;
+   }
+	 if(m_p->title==NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
+  fprintf(ofp, "%d, %s, %s\n", m_p->serial_number, m_p->title == NULL ? "-" : m_p->title, m_p->genre == NULL? "-" : m_p->genre);
+	if(root_d_num == 0){
+		fprintf(ofp, "(-)\n");
+	}
+	else{
+   	while(1){
+			if(d_p->next == NULL){
+					break;
+			}
+			if(d_p->name == NULL){
+				d_p=d_p->next;
+				continue;
+			}
+			if(!strcmp(m_p->director, d_p->name)){
+				break;
+			}
+   	   d_p = d_p->next;
+   	}
+		fprintf(ofp, "D : %s(%s)\n", m_p->director == NULL? "-" : m_p->director, d_p->next==NULL ? "-" : d_p->birth);
+	}
+
+	char *a_name = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1);
+	char *string = (char *)malloc(sizeof(char)*strlen(m_p->actors)+1);
+
+	strcpy(string, m_p->actors);
+	a_name = strtok(string, ",");
+	int i = 1;
+
+	if(root_a_num == 0){
+		fprintf(ofp, "A%d : %s(-)\n", i++, a_name);
+	}
+	else{
+		while(1){
+			if(a_p->next == NULL)
+				break;
+			if(a_p->name == NULL){
+				a_p = a_p->next;
+				continue;
+			}
+			if(*(a_name + strlen(a_name) - 1) == 13){
+				*(a_name + strlen(a_name) - 1) = 0;
+			}
+			if(*(a_name + strlen(a_name) - 1) == 13){
+				*(a_name + strlen(a_name) - 1) = 0;
+			}
+			if(!strncmp(a_name, a_p->name, strlen(a_name)-1))
+				break;
+			a_p = a_p->next;
+		}
+
+		fprintf(ofp, "A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
+	}
+
+	a_name = strtok(NULL, ",");
+	while(1){ //µÎ¹øÂ° actorºÎÅÍÀÇ ¹İº¹¹®
+		if(a_name == NULL){
+			fprintf(ofp, "\n");
+			fclose(ofp);
+			return;
+		}
+		if(*a_name == ' '){
+			a_name = a_name+sizeof(char);
+		}
+		a_p = root_actor;
+		while(1){
+			if(a_p->next == NULL)
+				break;
+			if(a_p->name == NULL){
+				a_p = a_p->next;
+				continue;
+			}
+			if(*(a_name + strlen(a_name) - 1) == 13){
+				*(a_name + strlen(a_name) - 1) = 0;
+			}
+			if(*(a_name + strlen(a_name) - 1) == 13){
+				*(a_name + strlen(a_name) - 1) = 0;
+			}
+			if(!strncmp(a_name, a_p->name, strlen(a_name)-1))
+				break;
+			a_p = a_p->next;
+		}
+
+
+		fprintf(ofp, "A%d : %s(%s)\n", i++, a_name, a_p->next == NULL ? "-" : a_p->birth);
+		a_name = strtok(NULL, ",");
+	}
+
+}
+
+void print_d_file(int sn, char *fn){
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+	 FILE *ofp = fopen(fn, "a");
+   while(d_p->serial_number != sn){
+      if(root_d_num == 0 || d_p->next == NULL){
+         printf("serial number is not found\n\n");
+         return;
+      }
+      d_p = d_p->next;
+   }
+	 if (d_p->name==NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
+
+	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1);
+	char *string = (char *)malloc(sizeof(char)*strlen(d_p->best_movies)+1);
+
+  fprintf(ofp, "%d, %s, %s, %s\n", d_p->serial_number, d_p->name==NULL? "-" : d_p->name, d_p->sex==NULL? "-" : d_p->sex, d_p->birth==NULL?"-":d_p->birth);
+	strcpy(string, d_p->best_movies);
+	a_best_movie = strtok(string, ",");
+
+	while(1){
+		if(a_best_movie == NULL){//best movie°¡ ÀÔ·ÂµÇÁö ¾Ê¾ÒÀ» ¶§
+			fprintf(ofp, "\n");
+			return;
+		}
+		if(root_m_num == 0 || m_p->next == NULL){
+			break;
+		}
+		if(m_p->title ==NULL){
+			m_p=m_p->next;
+			continue;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1)){
+			break;
+		}
+		m_p = m_p->next;
+	}
+
+	fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+	a_best_movie = strtok(NULL, ",");
+	while(1){		//µÎ¹øÂ° ´ëÇ¥ÀÛºÎÅÍÀÇ ¹İº¹¹®
+		if(a_best_movie == NULL){
+			fprintf(ofp, "\n");
+			fclose(ofp);
+			return;
+		}
+		if(*a_best_movie == ' ')
+			a_best_movie = a_best_movie+sizeof(char);
+		m_p = root_movie;
+		while(1){
+				if(m_p->next == NULL)
+					break;
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					continue;
+				}
+				if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+					*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+				}
+				if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+					*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+				}
+				if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
+					break;
+				m_p = m_p->next;
+		}
+		fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next==NULL? "-" : m_p->year, m_p->next==NULL? "-" : m_p->time);
+		a_best_movie = strtok(NULL, ",");
+	}
+}
+
+void print_a_file(int sn, char *fn){
+	movie *m_p;
+	director *d_p;
+	actor *a_p;
+   m_p = root_movie;
+   d_p = root_director;
+   a_p = root_actor;
+	 FILE *ofp = fopen(fn, "a");
+   while(a_p->serial_number != sn){
+      if(a_p->next == NULL){
+         printf("serial number is not found\n\n");
+         return;
+      }
+      a_p = a_p->next;
+   }
+	 if(a_p->name == NULL){
+		 printf("*deleted record*\n");
+		 return;
+	 }
+
+	char *a_best_movie = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
+	char *string = (char *)malloc(sizeof(char)*strlen(a_p->best_movies)+1);
+
+  fprintf(ofp, "%d, %s, %s, %s\n", a_p->serial_number, a_p->name==NULL? "-" : a_p->name, a_p->sex==NULL? "-" : a_p->sex, a_p->birth==NULL? "-" : a_p->birth);
+
+	strcpy(string, a_p->best_movies);
+	a_best_movie = strtok(string, ",");
+	while(1){
+		if(a_best_movie == NULL){
+			fprintf(ofp, "\n"); //best movie°¡ ¾Æ¿¹ ÀÔ·ÂµÇÁö ¾Ê¾ÒÀ» ¶§
+			return;
+		}
+		if(m_p->next==NULL){ //best movie°¡ ¸ñ·Ï¿¡ ¾øÀ» ¶§
+			break;
+		}
+		if(m_p->title == NULL){
+			m_p=m_p->next;
+			continue;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+			*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+		}
+		if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
+			break;
+		m_p = m_p->next;
+	}
+
+	fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next == NULL ? "-" : m_p->year, m_p->next == NULL ? "-" : m_p->time);
+	a_best_movie = strtok(NULL, ",");
+	while(1){	//µÎ¹øÂ° ´ëÇ¥ÀÛºÎÅÍÀÇ ¹İº¹¹®
+		if(a_best_movie == NULL){
+			fprintf(ofp, "\n");
+			fclose(ofp);
+			return;
+		}
+		if(*a_best_movie == ' ')
+			a_best_movie = a_best_movie+sizeof(char);
+		m_p = root_movie;
+		while(1){
+			if(m_p->next == NULL){
+				break;
+			}
+			if(m_p->title ==NULL){
+				m_p=m_p->next;
+				continue;
+			}
+			if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+				*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+			}
+			if(*(a_best_movie + strlen(a_best_movie) - 1) == 13){
+				*(a_best_movie + strlen(a_best_movie) - 1) = 0;
+			}
+			if(!strncmp(a_best_movie, m_p->title, strlen(a_best_movie)-1))
+				break;
+			m_p = m_p->next;
+		}
+
+		fprintf(ofp, "%s, %s, %s\n", a_best_movie, m_p->next==NULL ? "-" : m_p->year, m_p->next==NULL ? "-" : m_p->time);
+		a_best_movie = strtok(NULL, ",");
+	}
+
+}
+
+void sort(char *factor, char *option, char *file_name){//±¸Á¶Ã¼ Å©±â 64
+	if(strcmp(file_name, "NULL")){//filenameÀÌ ÁöÁ¤µÅÀÖÀ» ¶§ ±âÁ¸ ÆÄÀÏ Áö¿ò
+		FILE *fp = fopen(file_name, "w");
+		fclose(fp);
+	}
+
+	if(!strcmp(factor, "m")){ // factor == m
+		movie *m_p; //¸µÅ©µå¸®½ºÆ® Æ÷ÀÎÅÍ
+		sorting *m_string; //movieÀÇ ±¸Á¶Ã¼ ¸â¹öµéÀ» ³Ö±â À§ÇÑ ±¸Á¶Ã¼
+		sorting m_tmp; //Á¤·ÄÀ» À§ÇÑ tmp
+		sorting_num *m_num; //movieÀÇ ±¸Á¶Ã¼ ¸â¹öµéÀ» ³Ö±â À§ÇÑ ±¸Á¶Ã¼
+		sorting_num m_tmp_n; //intÇü Á¤·ÄÀ» À§ÇÑ tmp
+		m_p = root_movie; //½ÃÀÛÁöÁ¡À¸·Î µ¹·Á³õÀ½
+		int total = 0; //ÃÑ ·¹ÄÚµå °³¼ö¸¦ ¼¼±â À§ÇÑ º¯¼ö
+		while(1){
+			if(m_p->next == NULL){
+				break;
+			}
+			total++;
+			m_p = m_p->next;
+		}
+		m_string = (sorting *)malloc(sizeof(sorting)*total); //·¹ÄÚµå ¼ö¸¸Å­ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¿¡ ¸Ş¸ğ¸® ÇÒ´ç
+
+
+		if(!strcmp(option, "NULL") || !strcmp(option, "t")){ //option == NULL or tÀÏ ¶§ (Ãâ·Â µ¿ÀÏ)
+			m_p = root_movie;
+			for(int i=0; i<total; i++){ //movie ·¹ÄÚµåÀÇ titleÀ» ¸ğµÎ ÀÓ½Ã ±¸Á¶Ã¼·Î ¿Å°Ü¿È
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->title)+1);
+				strcpy((*(m_string+i)).string, m_p->title);
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+
+		}
+			for(int i=total-1; i>0; i--){ //¹öºíÁ¤·Ä
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+					*(m_string+j+1) = m_tmp;
+					}
+				}
+
+			}
+
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m((*(m_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m_file((*(m_string+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "g")){ //factor == m, option == g
+			m_p = root_movie;
+			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->genre)+1);
+				strcpy((*(m_string+i)).string, m_p->genre);
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m((*(m_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m_file((*(m_string+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "d")){ //factor == m, option == d
+			m_p = root_movie;
+			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(m_p->director)+1);
+				strcpy((*(m_string+i)).string, m_p->director);
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m((*(m_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m_file((*(m_string+i)).serial_number, file_name);
+				}
+			}
+		}
+
+		else if(!strcmp(option, "y")){ //option == y (¿¬µµ´Â intÇüÀ¸·Î ºñ±³)
+			m_p = root_movie;
+			m_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(m_num+i)).num = atoi(m_p->year);
+				(*(m_num+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(m_num+j)).num > (*(m_num+j+1)).num){
+						m_tmp_n = *(m_num+j);
+						*(m_num+j) = *(m_num+j+1);
+						*(m_num+j+1) = m_tmp_n;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m((*(m_num+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m_file((*(m_num+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "r")){ //option == t (½Ã°£Àº intÇüÀ¸·Î ºñ±³)
+			m_p = root_movie;
+			m_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(m_num+i)).num = atoi(m_p->time);
+				(*(m_num+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(m_num+j)).num > (*(m_num+j+1)).num){
+						m_tmp_n = *(m_num+j);
+						*(m_num+j) = *(m_num+j+1);
+						*(m_num+j+1) = m_tmp_n;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m((*(m_num+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m_file((*(m_num+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "a")){ //factor == m, option == a //°Á Ã¹¹øÂ° ¹è¿ì ÀÌ¸§À¸·Î ÇÔ.
+			m_p = root_movie;
+			char *token;
+			char *st; //ÀÓ½Ã·Î actors¸¦ ÅëÂ°·Î ´ãÀ» Æ÷ÀÎÅÍ
+			for(int i=0; i<total; i++){
+				if(m_p->title == NULL){
+					m_p=m_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				st = (char *)malloc(sizeof(char)+strlen(m_p->actors)+1);
+				strcpy(st, m_p->actors);
+				token = strtok(st, ","); //tokenÀ¸·Î Ã¹¹øÂ° ¹è¿ì¸¸ Àß¶ó³¿.
+				(*(m_string+i)).string = (char *)malloc(sizeof(char)*strlen(token)+1);
+				strcpy((*(m_string+i)).string, token); //Ã¹¹øÂ° ¹è¿ì¸¦ ±¸Á¶Ã¼¿¡ ³ÖÀ½.
+				(*(m_string+i)).serial_number = m_p->serial_number;
+				m_p=m_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(m_string+j)).string, (*(m_string+j+1)).string)) > 0){
+						m_tmp = *(m_string+j);
+						*(m_string+j) = *(m_string+j+1);
+						*(m_string+j+1) = m_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m((*(m_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_m_file((*(m_string+i)).serial_number, file_name);
+				}
+			}
+		}
+	}
+	else if(!strcmp(factor, "d")){ // factor == d
+		director *d_p; //director ¸µÅ©µå ¸®½ºÆ® Æ÷ÀÎÅÍ
+		sorting *d_string; //directorÀÇ char*Çü, serial number ³Ö±â À§ÇÑ ±¸Á¶Ã¼
+		sorting d_tmp; //Á¤·ÄÀ» À§ÇÑ tmp
+		sorting_num *d_num; //directorÀÇ intÇü, serial number ³Ö±â À§ÇÑ ±¸Á¶Ã¼
+		sorting_num d_tmp_n; //intÇü Á¤·ÄÀ» À§ÇÑ tmp
+		d_p = root_director;
+		int total = 0;
+		while(1){
+			if(d_p->next == NULL){
+				break;
+			}
+			total++;
+			d_p = d_p->next;
+		}
+		d_string = (sorting *)malloc(sizeof(sorting)*total);
+
+		if(!strcmp(option, "NULL") || !strcmp(option, "n")){ //option ==NULL or n
+			d_p = root_director;
+			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(d_p->name)+1);
+				strcpy((*(d_string+i)).string, d_p->name);
+				(*(d_string+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(d_string+j)).string, (*(d_string+j+1)).string)) > 0){
+						d_tmp = *(d_string+j);
+						*(d_string+j) = *(d_string+j+1);
+						*(d_string+j+1) = d_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d((*(d_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d_file((*(d_string+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "s")){ //option ==s
+			d_p = root_director;
+			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(d_p->sex)+1);
+				strcpy((*(d_string+i)).string, d_p->sex);
+				(*(d_string+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(d_string+j)).string, (*(d_string+j+1)).string)) > 0){
+						d_tmp = *(d_string+j);
+						*(d_string+j) = *(d_string+j+1);
+						*(d_string+j+1) = d_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d((*(d_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d_file((*(d_string+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "b")){ //option == b (»ı³â¿ùÀÏÀº intÇüÀ¸·Î ºñ±³)//¾î¸° ¼øÀ¸·Î Á¤·ÄµÊ.
+			d_p = root_director;
+			d_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(d_num+i)).num = atoi(d_p->birth);
+				(*(d_num+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(d_num+j)).num > (*(d_num+j+1)).num){
+						d_tmp_n = *(d_num+j);
+						*(d_num+j) = *(d_num+j+1);
+						*(d_num+j+1) = d_tmp_n;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d((*(d_num+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d_file((*(d_num+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "m")){ //option == m Ã¹¹øÂ° ¿µÈ­ Á¦¸ñÀ¸·Î ÇÔ.
+			d_p = root_director;
+			char *token;
+			char *st; //ÀÓ½Ã·Î best_movies¸¦ ÅëÂ°·Î ´ãÀ» Æ÷ÀÎÅÍ
+			for(int i=0; i<total; i++){
+				if(d_p->name == NULL){
+					d_p=d_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				st = (char *)malloc(sizeof(char)+strlen(d_p->best_movies)+1);
+				strcpy(st, d_p->best_movies);
+				token = strtok(st, ",");
+				(*(d_string+i)).string = (char *)malloc(sizeof(char)*strlen(token)+1);
+				strcpy((*(d_string+i)).string, token);
+				(*(d_string+i)).serial_number = d_p->serial_number;
+				d_p=d_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(d_string+j)).string, (*(d_string+j+1)).string)) > 0){
+						d_tmp = *(d_string+j);
+						*(d_string+j) = *(d_string+j+1);
+						*(d_string+j+1) = d_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d((*(d_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_d_file((*(d_string+i)).serial_number, file_name);
+				}
+			}
+		}
+	}
+	else if(!strcmp(factor, "a")){ // factor == a
+		actor *a_p;
+		sorting *a_string; //directorÀÇ char*Çü, serial number ³Ö±â À§ÇÑ ±¸Á¶Ã¼
+		sorting a_tmp; //Á¤·ÄÀ» À§ÇÑ tmp
+		sorting_num *a_num; //directorÀÇ intÇü, serial number ³Ö±â À§ÇÑ ±¸Á¶Ã¼
+		sorting_num a_tmp_n; //intÇü Á¤·ÄÀ» À§ÇÑ tmp
+		a_p = root_actor;
+		int total = 0;
+		while(1){
+			if(a_p->next == NULL){
+				break;
+			}
+			total++;
+			a_p = a_p->next;
+		}
+		a_string = (sorting *)malloc(sizeof(sorting)*total);
+
+		if(!strcmp(option, "NULL") || !strcmp(option, "n")){ //option ==NULL or n
+			a_p = root_actor;
+			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(a_p->name)+1);
+				strcpy((*(a_string+i)).string, a_p->name);
+				(*(a_string+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(a_string+j)).string, (*(a_string+j+1)).string)) > 0){
+						a_tmp = *(a_string+j);
+						*(a_string+j) = *(a_string+j+1);
+						*(a_string+j+1) = a_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a((*(a_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a_file((*(a_string+i)).serial_number, file_name);
+				}
+			}
+		}
+		if(!strcmp(option, "s")){ //option ==s
+			a_p = root_actor;
+			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(a_p->sex)+1);
+				strcpy((*(a_string+i)).string, a_p->sex);
+				(*(a_string+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(a_string+j)).string, (*(a_string+j+1)).string)) > 0){
+						a_tmp = *(a_string+j);
+						*(a_string+j) = *(a_string+j+1);
+						*(a_string+j+1) = a_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a((*(a_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a_file((*(a_string+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "b")){ //option == b (»ı³â¿ùÀÏÀº intÇüÀ¸·Î ºñ±³)//¾î¸° ¼øÀ¸·Î Á¤·ÄµÊ.
+			a_p = root_actor;
+			a_num = (sorting_num *)malloc(sizeof(sorting_num)*total);
+			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				(*(a_num+i)).num = atoi(a_p->birth);
+				(*(a_num+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((*(a_num+j)).num > (*(a_num+j+1)).num){
+						a_tmp_n = *(a_num+j);
+						*(a_num+j) = *(a_num+j+1);
+						*(a_num+j+1) = a_tmp_n;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a((*(a_num+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a_file((*(a_num+i)).serial_number, file_name);
+				}
+			}
+		}
+		else if(!strcmp(option, "m")){ //option == m Ã¹¹øÂ° ¿µÈ­ Á¦¸ñÀ¸·Î ÇÔ.
+			a_p = root_actor;
+			char *token;
+			char *st; //ÀÓ½Ã·Î best_movies¸¦ ÅëÂ°·Î ´ãÀ» Æ÷ÀÎÅÍ
+			for(int i=0; i<total; i++){
+				if(a_p->name == NULL){
+					a_p=a_p->next;
+					total--;
+					i--;
+					continue;
+				}
+				st = (char *)malloc(sizeof(char)+strlen(a_p->best_movies)+1);
+				strcpy(st, a_p->best_movies);
+				token = strtok(st, ",");
+				(*(a_string+i)).string = (char *)malloc(sizeof(char)*strlen(token)+1);
+				strcpy((*(a_string+i)).string, token);
+				(*(a_string+i)).serial_number = a_p->serial_number;
+				a_p=a_p->next;
+			}
+			for(int i=total-1; i>0; i--){
+				for(int j=0; j<i; j++){
+					if((strcmp((*(a_string+j)).string, (*(a_string+j+1)).string)) > 0){
+						a_tmp = *(a_string+j);
+						*(a_string+j) = *(a_string+j+1);
+						*(a_string+j+1) = a_tmp;
+					}
+				}
+			}
+			if(!strcmp(file_name, "NULL")){ //È­¸é Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a((*(a_string+i)).serial_number);
+				}
+			}
+			else{		//filename ÁöÁ¤ÇÑ Ãâ·ÂÀÏ ¶§
+				for(int i=0; i<total; i++){
+					print_a_file((*(a_string+i)).serial_number, file_name);
+				}
+			}
+		}
+	}
+
+}
+
+int menu_func(char *input) {	//¸í·É¾î ÀÔ·ÂÇÑ°Å ½ÇÇàÇÏ´Â°Å, ÃßÈÄ¿¡ °°Àº Çü½ÄÀ¸·Î Ãß°¡ÇÏ¼¼¿ë
+	char *temp;	//input¹Ş´Â ÀÓ½Ã º¯¼ö, inputÀ» ¹Ù²Ù´Â »çÅÂ°¡ ÀÏ¾î³ªÁö ¾Ê°Ô ÇØÁÜ
+	char *token;	//¸í·É¾î ÂÉ°³¼­ ÀúÀåÇÏ´Â ÅäÅ«
+	char *cut;	//¸í·É¾î ÂÉ°³´Â ±âÁØÀÌ ´ã±ä Æ÷ÀÎÅÍ
+	char *menu;	//¸í·É ºÎºĞÀ» ´ã´Â Æ÷ÀÎÅÍ(¿¹: update)
+	char *factor;	//ÀÎÀÚ ºÎºĞÀ» ´ã´Â Æ÷ÀÎÅÍ(¿¹: m, d, aÁß ÇÏ³ªÀÓ)
+	char *option;	//¿É¼Ç ºÎºĞÀ» ´ã´Â Æ÷ÀÎÅÍ(¿¹: tdy)
+	char *string;	//search¸í·É¿¡ ¾²ÀÌ´Â Ã£À» ¹®ÀÚ¿­
+	char *file_name;	//ÆÄÀÏ ÀÌ¸§À» ´ã´Â Æ÷ÀÎÅÍ(¿¹: my_list)
+	int get_serial_num;	//print³ª delete¸í·É¿¡ ¾²ÀÌ´Â °ü¸® ¹øÈ£
+	int i;	//for¹®À» µ¹¸®´Â º¯¼ö, ¿Ö forµµ ¾ø´Âµ¥ ¼±¾ğÇß³Ä ¹°À¸½Å´Ù¸é ´ë´ä ¾ÈÇÏ´Â°Ô ÀÎ! Áö! »ó! Á¤!
+
+	temp = (char *)malloc(sizeof(char) * 50);	//temp µ¿Àû ÇÒ´ç
+	token = (char *)malloc(sizeof(char) * 50);	//ÅäÅ« µ¿Àû ÇÒ´ç
+	cut = (char *)malloc(sizeof(char) * 10);	//cut µ¿Àû ÇÒ´ç
+	strcpy(temp, input);	//temp¿¡ input º¹»ç
+	cut = " ";	//°ø¹éÀ¸·Î ¸í·É¾î ÂÉ°³±â
 
 	token = strtok(temp, cut);
-	if (token == NULL)	//ì•„ë¬´ê²ƒë„ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+	if (token == NULL)	//¾Æ¹«°Íµµ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 		return 1;
 	menu = (char *)malloc(sizeof(char) * strlen(token) + 1);
 	strcpy(menu, token);
 	printf("menu : %s\n", menu);
 
 	if (!strcmp(menu, "end")) {
-		return 0;	//quit_numì„ 0ìœ¼ë¡œ ë§Œë“¤ì–´ ì¢…ë£Œí•˜ê¸°
+		return 0;	//quit_numÀ» 0À¸·Î ¸¸µé¾î Á¾·áÇÏ±â
 	}
-	else if (!strcmp(menu, "add")) {	//add ëª…ë ¹ì–´ ì²˜ë¦¬
+	else if (!strcmp(menu, "add")) {	//add ¸í·É¾î Ã³¸®
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ìë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+		if (token == NULL)	//ÀÎÀÚ¸¦ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 			return 1;
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor í™•ì¸
+		printf("factor : %s\n", factor);	//factor È®ÀÎ
 
 		if (!strcmp(factor, "m"))
 			add_movie();
@@ -958,207 +2150,252 @@ int menu_func(char *input) {	//ëª…ë ¹ì–´ ì…ë ¥í•œê±° ì‹¤í–‰í•˜ëŠ”ê±°, ì¶”í›„ì—
 		else if (!strcmp(factor, "a"))
 			add_actor();
 	}
-	else if (!strcmp(menu, "print")) {	//print ëª…ë ¹ì–´ ì²˜ë¦¬, serial_num ì•ˆë¶™ì´ë©´ ì˜¤ë¥˜ëœ¸
+	else if (!strcmp(menu, "print")) {  //print ¸í·É¾î Ã³¸®, ¸ñ·Ï¿¡ ¾ø´Â °Å Ãâ·ÂÇØ¾ß ÇÒ ¶§ ¿À·ù³².
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ìë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
+		strcpy(factor, token);
+		printf("factor : %s\n", factor); //factor È®ÀÎ
+
+		token = strtok(NULL, cut);
+		if(token == NULL){            //serial number ¾øÀ» ¶§(³ªÁß¿¡ Áö¿ö¾ßÇÔ)
+			 if (!strcmp(factor, "m")) {
+			if(root_m_num == 0){
+				printf("no movie.\n\n");
+				return 1;
+			}
+					m = root_movie;
+					while (m->next != NULL) {
+						printf("%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, m->title, m->genre, m->director, m->year, m->time, m->actors);
+						if(m->d_link != NULL){
+							printf("%s's birthday : %s\n", m->d_link->name, m->d_link->birth);
+						}
+						m = m->next;
+					}
+					printf("\n");
+			 }
+			 else if (!strcmp(factor, "d")) {
+			if(root_d_num == 0){
+				printf("no director.\n\n");
+				return 1;
+			}
+					d = root_director;
+					while (d->next != NULL) {
+						 printf("add:%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
+						 d = d->next;
+					}
+					printf("\n");
+			 }
+			 else if (!strcmp(factor, "a")) {
+			if(root_a_num == 0){
+				printf("no actor.\n\n");
+				return 1;
+			}
+					a = root_actor;
+					while (1) {
+						if(a->next == NULL)
+							break;
+						 printf("%d:%s\n", a->serial_number, a->name);
+						 a = a->next;
+					}
+					printf("\n");
+			 }
+		}
+		else{ 				//serial number ÀÖÀ» ¶§
+			 get_serial_num = atoi(token); //¹®ÀÚ¿­À» ¼ıÀÚ·Î º¯È¯
+			 printf("num : %d\n", get_serial_num);  //get_serial_num È®ÀÎ
+			 if(!strcmp(factor, "m")){
+			if(root_m_num == 0){
+				printf("no movie.\n\n");
+				return 1;
+			}
+					print_m(get_serial_num);
+		}
+			 else if(!strcmp(factor, "d")){
+			if(root_d_num == 0){
+				printf("no director.\n\n");
+				return 1;
+			}
+					print_d(get_serial_num);
+		}
+			 else if(!strcmp(factor, "a")){
+			if(root_a_num == 0){
+				printf("no actor.\n\n");
+				return 1;
+			}
+					print_a(get_serial_num);
+		}
+		}
+
+		}
+	else if (!strcmp(menu, "delete")) {	//delete ¸í·É¾î Ã³¸®
+		token = strtok(NULL, cut);
+		if (token == NULL)	//ÀÎÀÚ¸¦ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 			return 1;
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor í™•ì¸
+		printf("factor : %s\n", factor);	//factor È®ÀÎ
 
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ì‹œë¦¬ì–¼ ë„˜ë²„ë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
-			return 1;
-		get_serial_num = atoi(token);	//ë¬¸ìì—´ì„ ìˆ«ìë¡œ ë³€í™˜
-		printf("num : %d\n", get_serial_num);	//get_serial_num í™•ì¸
-
-		if (!strcmp(factor, "m")) {	//ì„ì‹œ moive ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
-			m = root_movie;
-			while (m->next != NULL) {
-				printf("%d:%s:%s:%s:%s:%s:%s\n", m->serial_number, m->title, m->genre, m->director, m->year, m->time, m->actors);
-				m = m->next;
-			}
-			printf("\n");
-		}
-		else if (!strcmp(factor, "d")) {	//ì„ì‹œ director ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
-			d = root_director;
-			while (d->next != NULL) {
-				printf("add:%d:%s:%s:%s:%s\n", d->serial_number, d->name, d->sex, d->birth, d->best_movies);
-				d = d->next;
-			}
-			printf("\n");
-		}
-		else if (!strcmp(factor, "a")) {	//ì„ì‹œ actor ì¶œë ¥í•˜ëŠ” í•¨ìˆ˜
-			a = root_actor;
-			while (a->next != NULL) {
-				printf("%d:%s:%s:%s:%s\n", a->serial_number, a->name, a->sex, a->birth, a->best_movies);
-				a = a->next;
-			}
-			printf("\n");
-		}
-	}
-	else if (!strcmp(menu, "delete")) {	//delete ëª…ë ¹ì–´ ì²˜ë¦¬
-		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ìë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
-			return 1;
-		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor í™•ì¸
-
-		token = strtok(NULL, cut);
-		if (token == NULL)	//ì‹œë¦¬ì–¼ ë„˜ë²„ë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+		if (token == NULL)	//½Ã¸®¾ó ³Ñ¹ö¸¦ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 			return 1;
 		get_serial_num = atoi(token);
-		printf("num : %d\n", get_serial_num);	//get_serial_num í™•ì¸
+		printf("num : %d\n", get_serial_num);	//get_serial_num È®ÀÎ
 
 		if (!strcmp(factor, "m"))
-			;	//moive ì‚­ì œí•˜ëŠ” í•¨ìˆ˜
+			;	//moive »èÁ¦ÇÏ´Â ÇÔ¼ö
 		else if (!strcmp(factor, "d"))
-			;	//director ì‚­ì œí•˜ëŠ” í•¨ìˆ˜
+			;	//director »èÁ¦ÇÏ´Â ÇÔ¼ö
 		else if (!strcmp(factor, "a"))
-			;	//actor ì‚­ì œí•˜ëŠ” í•¨ìˆ˜
+			;	//actor »èÁ¦ÇÏ´Â ÇÔ¼ö
 	}
-	else if (!strcmp(menu, "search")) {	//search ëª…ë ¹ì–´ ì²˜ë¦¬
+	else if (!strcmp(menu, "search")) {	//search ¸í·É¾î Ã³¸®
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ìë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+		if (token == NULL)	//ÀÎÀÚ¸¦ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 			return 1;
 
 		if (*token == '-') {
 			option = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(option, token);
-			printf("option : %s\n", option);	//option í™•ì¸
+			printf("option : %s\n", option);	//option È®ÀÎ
 			token = strtok(NULL, cut);
 		}
-
+		else{
+			option = NULL;
+		}
 		string = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(string, token);
-		printf("string : %s\n", string);	//string í™•ì¸
+		printf("string : %s\n", string);	//string È®ÀÎ
 	}
-	else if (!strcmp(menu, "update")) {	//update ëª…ë ¹ì–´ ì²˜ë¦¬
+	else if (!strcmp(menu, "update")) {	//update ¸í·É¾î Ã³¸®
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ìë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+		if (token == NULL)	//ÀÎÀÚ¸¦ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 			return 1;
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor í™•ì¸
+		printf("factor : %s\n", factor);	//factor È®ÀÎ
 
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ë’¤ì— ë” ì—†ìœ¼ë©´ ê± ë„˜ê¸°ê¸°
+		if (token == NULL)	//µÚ¿¡ ´õ ¾øÀ¸¸é °Á ³Ñ±â±â
 			return 1;
-		if (*token >= '9') {	//ìˆ«ìê°€ ì•„ë‹Œ ì•ŒíŒŒë²³ì´ë©´ optionìœ¼ë¡œ ë„£ê¸°
+		if (*token >= '9') {	//¼ıÀÚ°¡ ¾Æ´Ñ ¾ËÆÄºªÀÌ¸é optionÀ¸·Î ³Ö±â
 			option = (char *)malloc(sizeof(char) * strlen(token) + 1);
 			strcpy(option, token);
-			printf("option : %s\n", option);	//option í™•ì¸
+			printf("option : %s\n", option);	//option È®ÀÎ
 			token = strtok(NULL, cut);
-			if (token == NULL)	//ì‹œë¦¬ì–¼ ë„˜ë²„ ì—†ìœ¼ë©´ ê± ë„˜ê¸°ê¸°
+			if (token == NULL)	//½Ã¸®¾ó ³Ñ¹ö ¾øÀ¸¸é °Á ³Ñ±â±â
 				return 1;
-		}		
+		}
 		get_serial_num = atoi(token);
-		printf("num : %d\n", get_serial_num);	//get_serial_num í™•ì¸
+		printf("num : %d\n", get_serial_num);	//get_serial_num È®ÀÎ
 	}
-	else if (!strcmp(menu, "sort")) {	//sort ëª…ë ¹ì–´ ì²˜ë¦¬
+	else if (!strcmp(menu, "sort")) {	//sort ¸í·É¾î Ã³¸®
 		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ì ì—†ìœ¼ë©´ ê± ë„˜ê¸°ê¸°
+		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
+		strcpy(factor, token);
+		printf("factor : %s\n", factor);	//factor È®ÀÎ
+		if ((token = strtok(NULL, cut)) != NULL) {	//µÚ¿¡ ¹¹°¡ ´õ ÀÖ´ÂÁö È®ÀÎ
+			if (!strcmp(token, "-f")) {	//µÚ¿¡ ÀÖ´Â°Ô -fÀÌ¸é
+				token = strtok(NULL, cut);	//-f °Ç³Ê¶Ù±â
+				file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
+				strcpy(file_name, token);
+				printf("file_name : %s\n", file_name);	//file_name È®ÀÎ
+				sort(factor, "NULL", file_name);
+			}
+			else {	//µÚ¿¡ ÀÖ´Â°Ô ¿É¼ÇÀÌ¸é
+				option = (char *)malloc(sizeof(char) * strlen(token) + 1);
+				strcpy(option, token);
+				printf("option : %s\n", option);	//option È®ÀÎ
+
+				if ((token = strtok(NULL, cut)) != NULL) {	//µÚ¿¡ ¹¹°¡ ´õ ÀÖ´ÂÁö È®ÀÎ
+					token = strtok(NULL, cut);	//ÀÖ´Ù¸é -fÀÏÅ×´Ï °Ç³Ê¶Ù±â
+					file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
+					strcpy(file_name, token);
+					printf("file_name : %s\n", file_name);	//file_name È®ÀÎ
+					sort(factor, option, file_name);
+				}
+				else{//µÚ¿¡ ¾Æ¹«°Íµµ ¾ø´Ù¸é
+					sort(factor, option, "NULL");
+				}
+			}
+		}
+		else{ 			//factor µÚ¿¡ ¾Æ¹«°Íµµ ¾øÀ½.
+			sort(factor, "NULL", "NULL");
+		}
+		printf("\n");
+	}
+	else if (!strcmp(menu, "save")) {	//save ¸í·É¾î Ã³¸®
+		token = strtok(NULL, cut);
+		if (token == NULL)	//ÀÎÀÚ¸¦ ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 			return 1;
 		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
 		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor í™•ì¸
+		printf("factor : %s\n", factor);	//factor È®ÀÎ
 
-		if ((token = strtok(NULL, cut)) != NULL) {	//ë’¤ì— ë­ê°€ ë” ìˆëŠ”ì§€ í™•ì¸ 
-			if (!strcmp(token, "-f")) {	//ë’¤ì— ìˆëŠ”ê²Œ -fì´ë©´
-				token = strtok(NULL, cut);	//-f ê±´ë„ˆë›°ê¸°
-				if (token == NULL)	//ì˜ëª» ì…ë ¥í•˜ë©´ ê± ë„˜ê¸°ê¸°
+		if ((token = strtok(NULL, cut)) != NULL) {	//µÚ¿¡ ¹¹°¡ ´õ ÀÖ´ÂÁö È®ÀÎ
+			if (!strcmp(token, "-f")) {	//µÚ¿¡ ÀÖ´Â°Ô -fÀÌ¸é
+				token = strtok(NULL, cut);	//-f °Ç³Ê¶Ù±â
+				if (token == NULL)	//ÆÄÀÏÀÌ¸§À» ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 					return 1;
 				file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 				strcpy(file_name, token);
-				printf("file_name : %s\n", file_name);	//file_name í™•ì¸
+				printf("file_name : %s\n", file_name);	//file_name È®ÀÎ
 			}
-			else {	//ë’¤ì— ìˆëŠ”ê²Œ ì˜µì…˜ì´ë©´
+			else {	//µÚ¿¡ ÀÖ´Â°Ô ¿É¼ÇÀÌ¸é
 				option = (char *)malloc(sizeof(char) * strlen(token) + 1);
 				strcpy(option, token);
-				printf("option : %s\n", option);	//option í™•ì¸
+				printf("option : %s\n", option);	//option È®ÀÎ
 
-				if ((token = strtok(NULL, cut)) != NULL) {	//ë’¤ì— ë­ê°€ ë” ìˆëŠ”ì§€ í™•ì¸
-					token = strtok(NULL, cut);	//ìˆë‹¤ë©´ -fì¼í…Œë‹ˆ ê±´ë„ˆë›°ê¸°
-					if (token == NULL)	//íŒŒì¼ì´ë¦„ì„ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
+				if ((token = strtok(NULL, cut)) != NULL) {	//µÚ¿¡ ¹¹°¡ ´õ ÀÖ´ÂÁö È®ÀÎ
+					token = strtok(NULL, cut);	//ÀÖ´Ù¸é -fÀÏÅ×´Ï °Ç³Ê¶Ù±â
+					if (token == NULL)	//ÆÄÀÏ ÀÌ¸§À» ÀÔ·Â¾ÈÇÏ¸é °Á ³Ñ±â±â
 						return 1;
 					file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
 					strcpy(file_name, token);
-					printf("file_name : %s\n", file_name);	//file_name í™•ì¸
+					printf("file_name : %s\n", file_name);	//file_name È®ÀÎ
 				}
 			}
 		}
 		printf("\n");
 	}
-	else if (!strcmp(menu, "save")) {	//save ëª…ë ¹ì–´ ì²˜ë¦¬
-		token = strtok(NULL, cut);
-		if (token == NULL)	//ì¸ìë¥¼ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
-			return 1;
-		factor = (char *)malloc(sizeof(char) * strlen(token) + 1);
-		strcpy(factor, token);
-		printf("factor : %s\n", factor);	//factor í™•ì¸
 
-		if ((token = strtok(NULL, cut)) != NULL) {	//ë’¤ì— ë­ê°€ ë” ìˆëŠ”ì§€ í™•ì¸ 
-			if (!strcmp(token, "-f")) {	//ë’¤ì— ìˆëŠ”ê²Œ -fì´ë©´
-				token = strtok(NULL, cut);	//-f ê±´ë„ˆë›°ê¸°
-				if (token == NULL)	//íŒŒì¼ì´ë¦„ì„ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
-					return 1;
-				file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
-				strcpy(file_name, token);
-				printf("file_name : %s\n", file_name);	//file_name í™•ì¸
-			}
-			else {	//ë’¤ì— ìˆëŠ”ê²Œ ì˜µì…˜ì´ë©´
-				option = (char *)malloc(sizeof(char) * strlen(token) + 1);
-				strcpy(option, token);
-				printf("option : %s\n", option);	//option í™•ì¸
-
-				if ((token = strtok(NULL, cut)) != NULL) {	//ë’¤ì— ë­ê°€ ë” ìˆëŠ”ì§€ í™•ì¸
-					token = strtok(NULL, cut);	//ìˆë‹¤ë©´ -fì¼í…Œë‹ˆ ê±´ë„ˆë›°ê¸°
-					if (token == NULL)	//íŒŒì¼ ì´ë¦„ì„ ì…ë ¥ì•ˆí•˜ë©´ ê± ë„˜ê¸°ê¸°
-						return 1;
-					file_name = (char *)malloc(sizeof(char) * strlen(token) + 1);
-					strcpy(file_name, token);
-					printf("file_name : %s\n", file_name);	//file_name í™•ì¸
-				}
-			}
-		}
-		printf("\n");
-	}
-
-	if (!strcmp(input, "save m")) {	//ì„ì‹œ movie ì„¸ì´ë¸Œ
+	if (!strcmp(input, "save m")) {	//ÀÓ½Ã movie ¼¼ÀÌºê
 		save_movie();
 	}
-	else if (!strcmp(input, "save d")) {	//ì„ì‹œ director ì„¸ì´ë¸Œ
+	else if (!strcmp(input, "save d")) {	//ÀÓ½Ã director ¼¼ÀÌºê
 		save_director();
 	}
-	else if (!strcmp(input, "save a")) {	//ì„ì‹œ actor ì„¸ì´ë¸Œ
+	else if (!strcmp(input, "save a")) {	//ÀÓ½Ã actor ¼¼ÀÌºê
 		save_actor();
 	}
 
 	return 1;
 }
 
+
+
 int main(void) {
-	m = (movie *)malloc(sizeof(movie));	//movie *m ì „ì—­ êµ¬ì¡°ì²´ ë™ì í• ë‹¹
-	d = (director *)malloc(sizeof(director));	//director *d ì „ì—­ êµ¬ì¡°ì²´ ë™ì í• ë‹¹
-	a = (actor *)malloc(sizeof(actor));	//actor *a ì „ì—­ êµ¬ì¡°ì²´ ë™ì í• ë‹¹
-	int quit_num = 1;	//í”„ë¡œê·¸ë¨ ëë‚´ëŠ” ë³€ìˆ˜
+	m = (movie *)malloc(sizeof(movie));	//movie *m Àü¿ª ±¸Á¶Ã¼ µ¿ÀûÇÒ´ç
+	d = (director *)malloc(sizeof(director));	//director *d Àü¿ª ±¸Á¶Ã¼ µ¿ÀûÇÒ´ç
+	a = (actor *)malloc(sizeof(actor));	//actor *a Àü¿ª ±¸Á¶Ã¼ µ¿ÀûÇÒ´ç
+	int quit_num = 1;	//ÇÁ·Î±×·¥ ³¡³»´Â º¯¼ö
 	char *input_words;
-	input_words = (char *)malloc(sizeof(char) * 50);	
+	input_words = (char *)malloc(sizeof(char) * 50);
 
 	printf(">> Welcome to My Movie <<\n");
 	printf("File Loading.....\n");
 	load_movie();
 	load_director();
 	load_actor();
-	printf("You can use add, update, delete, search, sort, save, end commands.\n");	
-	signal(SIGINT, handler);	//Ctrl + cë¥¼ ëˆŒë €ì„ë•Œ ë°”ë¡œ ì¢…ë£Œë˜ì§€ ì•Šê³  ë¬¼ì–´ë³´ê¸°
-	
+	link_director();
+	printf("You can use add, update, delete, search, sort, save, end commands.\n");
+	signal(SIGINT, handler);	//Ctrl + c¸¦ ´­·¶À»¶§ ¹Ù·Î Á¾·áµÇÁö ¾Ê°í ¹°¾îº¸±â
+
 	while (quit_num) {
 		printf("(movie) ");
 		gets(input_words);
-		quit_num = menu_func(input_words);		
+		quit_num = menu_func(input_words);
 	}
 
 	return 0;
 }
+
